@@ -12,6 +12,26 @@ import (
 )
 
 const y = `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: baz
+  namespace: bat
+  annotations:
+    foo: fam
+spec:
+  replicas: 2
+  template:
+    metadata:
+      annotations:
+        foo: fam
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - port: 80
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
