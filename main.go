@@ -15,7 +15,7 @@ const y = `
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: baz
+  name: baz-app
   namespace: bat
   annotations:
     foo: fam
@@ -35,7 +35,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: baz
+  name: bazApp
   namespace: bat
 spec:
   replicas: 2
@@ -53,7 +53,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: foo
+  name: fooConfigMap
   namespace: bar
   labels:
     lbl1: somevalue
