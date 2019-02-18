@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	spew "github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/iancoleman/strcase"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +33,215 @@ func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
 		// WriteDeployment(obj.(*v1.Deployment), dst)
 
 	default:
-		printFields(obj, "")
+		// printFields(obj, "")
+	}
+
+	rv := reflect.ValueOf(obj)
+	ty := rv.Type()
+	if ty.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+		ty = rv.Type()
+	}
+
+	var typeName string
+	var resourceName string
+	var metaBlock *hclwrite.Block
+	var otherBlocks []*hclwrite.Block
+	for i := 0; i < rv.NumField(); i++ {
+		fieldVal := rv.Field(i)
+		fieldName := ty.Field(i).Name
+		switch fieldName {
+		case "ObjectMeta":
+			objMeta := fieldVal.Interface().(metav1.ObjectMeta)
+			metaBlock = encodeMetadataBlock(&objMeta)
+			resourceName = strcase.ToSnake(objMeta.Name)
+		case "TypeMeta":
+			typeMeta := fieldVal.Interface().(metav1.TypeMeta)
+			typeName = "kubernetes_" + strcase.ToSnake(typeMeta.Kind)
+		case "Status":
+			continue
+		// case "BinaryData":
+		// 	// don't add to TF resource
+		// 	continue
+		default:
+			// must some other field like 'spec' or 'data'
+			blk := EncodeAsBlock(fieldVal.Interface(), strings.ToLower(fieldName))
+			otherBlocks = append(otherBlocks, blk)
+		}
+	}
+
+	// top level resource block
+	resourceBlock := hclwrite.NewBlock("resource", []string{typeName, resourceName})
+	dst.AppendBlock(resourceBlock)
+
+	// add metadata block as first child
+	resourceBlock.Body().AppendBlock(metaBlock)
+
+	// add all other blocks
+	for _, blk := range otherBlocks {
+		resourceBlock.Body().AppendBlock(blk)
+	}
+}
+
+// EncodeAsBlock creates a new hclwrite.Block populated with the data from
+// the given value, which must be a struct or pointer to struct.
+func EncodeAsBlock(val interface{}, blockType string) *hclwrite.Block {
+	rv := reflect.ValueOf(val)
+	ty := rv.Type()
+	if ty.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+		ty = rv.Type()
+	}
+	if ty.Kind() != reflect.Struct && ty.Kind() != reflect.Map {
+	}
+
+	block := hclwrite.NewBlock(blockType, nil)
+	switch ty.Kind() {
+	case reflect.Struct:
+		populateBody(rv, ty, block.Body())
+
+	case reflect.Map:
+		fmt.Println("encoding map %s", blockType)
+		encodeMap(rv.Interface().(map[string]string), block.Body())
+		// valTy, err := gocty.ImpliedType(rv.Interface())
+		// if err != nil {
+		// 	panic(fmt.Sprintf("cannot encode %T as HCL expression: %s", rv.Interface(), err))
+		// }
+
+		// val, err := gocty.ToCtyValue(rv.Interface(), valTy)
+		// if err != nil {
+		// 	// This should never happen, since we should always be able
+		// 	// to decode into the implied type.
+		// 	panic(fmt.Sprintf("failed to encode %T as %#v: %s", rv.Interface(), valTy, err))
+		// }
+
+		// block.Body().SetAttributeValue("map", val)
+
+	default:
+		panic(fmt.Sprintf("%s value is %s, not struct or map", blockType, ty.Kind()))
+	}
+
+	return block
+}
+
+func populateBody(rv reflect.Value, ty reflect.Type, dst *hclwrite.Body) {
+	prevWasBlock := false
+
+	for fieldIdx := 0; fieldIdx < rv.NumField(); fieldIdx++ {
+		field := ty.Field(fieldIdx)
+		fieldTy := field.Type
+		fieldVal := rv.Field(fieldIdx)
+		fieldName := field.Name
+
+		if fieldTy.Kind() == reflect.Ptr {
+			fieldTy = fieldTy.Elem()
+			fieldVal = fieldVal.Elem()
+		}
+
+		if !fieldVal.CanSet() {
+			fmt.Printf("%s: can't set\n", fieldName)
+			continue // ignore unexported fields
+		}
+
+		fmt.Printf("SPEW %s: %s\n", fieldName, spew.Sdump(fieldVal))
+
+		switch fieldTy.Kind() {
+		case reflect.Struct:
+			fmt.Printf("%s: struct -- %s\n", fieldName, spew.Sdump(fieldVal))
+			if !fieldVal.IsValid() {
+				continue // ignore (field value is nil pointer)
+			}
+			if fieldTy.Kind() == reflect.Ptr && fieldVal.IsNil() {
+				continue // ignore
+			}
+			block := EncodeAsBlock(fieldVal.Interface(), fieldName)
+			if !prevWasBlock {
+				dst.AppendNewline()
+				prevWasBlock = true
+			}
+			dst.AppendBlock(block)
+
+		case reflect.Array:
+			fallthrough
+		case reflect.Slice:
+			fmt.Printf("%s: array or slice\n", fieldName)
+			s := fieldVal.Interface()
+			typ := reflect.TypeOf(s).Elem()
+			fmt.Printf("%sSlice Elem Type: %v\n", fieldName, typ)
+
+		// case reflect.Map:
+
+		default:
+			fmt.Printf("%s: other\n", fieldName)
+			// TODO: ignore empty values if omitempty tag is set on field
+
+			if !fieldVal.IsValid() {
+				continue // ignore (field value is nil pointer)
+			}
+			if fieldTy.Kind() == reflect.Ptr && fieldVal.IsNil() {
+				continue // ignore
+			}
+
+			if prevWasBlock {
+				dst.AppendNewline()
+				prevWasBlock = false
+			}
+
+			valTy, err := gocty.ImpliedType(fieldVal.Interface())
+			if err != nil {
+				panic(fmt.Sprintf("cannot encode %T as HCL expression: %s", fieldVal.Interface(), err))
+			}
+
+			val, err := gocty.ToCtyValue(fieldVal.Interface(), valTy)
+			if err != nil {
+				// This should never happen, since we should always be able
+				// to decode into the implied type.
+				panic(fmt.Sprintf("failed to encode %T as %#v: %s", fieldVal.Interface(), valTy, err))
+			}
+
+			dst.SetAttributeValue(strings.ToLower(fieldName), val)
+		}
+
+		// if _, isAttr := tags.Attributes[name]; isAttr {
+
+		// 	if exprType.AssignableTo(fieldTy) || attrType.AssignableTo(fieldTy) {
+		// 		continue // ignore undecoded fields
+		// 	}
+
+		// } else { // must be a block, then
+		// 	elemTy := fieldTy
+		// 	isSeq := false
+		// 	if elemTy.Kind() == reflect.Slice || elemTy.Kind() == reflect.Array {
+		// 		isSeq = true
+		// 		elemTy = elemTy.Elem()
+		// 	}
+
+		// 	if bodyType.AssignableTo(elemTy) || attrsType.AssignableTo(elemTy) {
+		// 		continue // ignore undecoded fields
+		// 	}
+		// 	prevWasBlock = false
+
+		// 	if isSeq {
+		// 		l := fieldVal.Len()
+		// 		for i := 0; i < l; i++ {
+		// 			elemVal := fieldVal.Index(i)
+		// 			if !elemVal.IsValid() {
+		// 				continue // ignore (elem value is nil pointer)
+		// 			}
+		// 			if elemTy.Kind() == reflect.Ptr && elemVal.IsNil() {
+		// 				continue // ignore
+		// 			}
+		// 			block := EncodeAsBlock(elemVal.Interface(), name)
+		// 			if !prevWasBlock {
+		// 				dst.AppendNewline()
+		// 				prevWasBlock = true
+		// 			}
+		// 			dst.AppendBlock(block)
+		// 		}
+		// 	} else {
+
+		// 	}
+		// }
 	}
 }
 
@@ -84,36 +295,8 @@ func printFields(obj interface{}, indent string) {
 			fmt.Printf("%sField Value: %v\n", indent, fieldVal)
 
 		}
-
-		// fmt.Printf(s%spew.Sdump(fieldTy))
-		// fmt.Printf(s%spew.Sdump(fieldVal))
-
-		// if fieldTy.Kind() == reflect.Ptr {
-		// 	fieldTy = fieldTy.Elem()
-		// 	fieldVal = fieldVal.Elem()
-		// }
-
-		// fmt.Printf("Field:%d Name:%s type:%T value:%v\n", i, ty.Field(i).Name, field.Type, fieldVal)
-		// fmt.Printf(s%spew.Sdump(field))
-		// fmt.Printf(s%spew.Sdump(fieldTy))
-		// fmt.Printf(s%spew.Sdump(fieldVal))
 	}
 }
-
-// func getObjectFields(obj runtime.Object) {
-// 	rv := reflect.ValueOf(val)
-// 	ty := rv.Type()
-// 	if ty.Kind() == reflect.Ptr {
-// 		rv = rv.Elem()
-// 		ty = rv.Type()
-// 	}
-// 	if ty.Kind() != reflect.Struct {
-// 		panic(fmt.Sprintf("value is %s, not struct", ty.Kind()))
-// 	}
-
-// 	tags := getFieldTags(ty)
-
-// }
 
 func encodeMetadataBlock(meta *metav1.ObjectMeta) *hclwrite.Block {
 	blk := hclwrite.NewBlock("metadata", nil)
@@ -194,6 +377,12 @@ func convertCtyValue(val interface{}) cty.Value {
 }
 
 func encodeMap(m map[string]string, dst *hclwrite.Body) {
+	for k, v := range m {
+		dst.SetAttributeValue(k, convertCtyValue(v))
+	}
+}
+
+func encodeMap2(m map[string]interface{}, dst *hclwrite.Body) {
 	for k, v := range m {
 		dst.SetAttributeValue(k, convertCtyValue(v))
 	}
