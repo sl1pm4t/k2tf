@@ -8,6 +8,7 @@ import (
 	spew "github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/iancoleman/strcase"
+	"github.com/mitchellh/reflectwalk"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/api/apps/v1"
@@ -21,7 +22,111 @@ var KubeKindTFResourceTypeMap = map[string]string{
 	"ConfigMap":  "kubernetes_config_map",
 }
 
+type walker struct {
+	indent       string
+	currentField string
+	isTopLevel   bool
+
+	dst      *hclwrite.Body
+	typeName string
+}
+
+func NewWalker(dst *hclwrite.Body) *walker {
+	w := &walker{}
+	w.dst = dst
+	w.isTopLevel = true
+
+	return w
+}
+
+func (w *walker) Enter(l reflectwalk.Location) error {
+	if l == reflectwalk.WalkLoc {
+		w.isTopLevel = true
+	} else {
+		w.isTopLevel = false
+	}
+
+	if l == reflectwalk.Struct || l == reflectwalk.Slice || l == reflectwalk.Map {
+		// fmt.Printf("%sentered %s\n", w.indent, l.String())
+		w.indent = w.indent + "  "
+	}
+	return nil
+}
+
+func (w *walker) Exit(l reflectwalk.Location) error {
+	if l == reflectwalk.Struct || l == reflectwalk.Slice || l == reflectwalk.Map {
+		w.indent = w.indent[0 : len(w.indent)-2]
+		fmt.Printf("%sexited %s\n", w.indent, l.String())
+	}
+	return nil
+}
+
+func (w *walker) Struct(v reflect.Value) error {
+	ty := reflect.TypeOf(v.Interface())
+	w.indent = w.indent + "  "
+
+	fmt.Printf("%sEntered Struct: %s\n", w.indent, ty.Name())
+
+	if w.isTopLevel {
+		typeName := KubeKindTFResourceTypeMap[ty.Name()]
+
+		// top level resource block
+		resourceBlock := hclwrite.NewBlock("resource", []string{typeName, "blah"})
+		w.dst.AppendBlock(resourceBlock)
+	}
+
+	return nil
+}
+
+func (w *walker) StructField(field reflect.StructField, v reflect.Value) error {
+	if field.Anonymous {
+		return reflectwalk.SkipEntry
+	} else if !v.IsValid() {
+		return reflectwalk.SkipEntry
+	} else {
+		switch field.Name {
+		// case "ObjectMeta":
+		// 	objMeta := fieldVal.Interface().(metav1.ObjectMeta)
+		// 	metaBlock = encodeMetadataBlock(&objMeta)
+		// 	resourceName = strcase.ToSnake(objMeta.Name)
+		case "TypeMeta":
+			typeMeta := v.Interface().(metav1.TypeMeta)
+			w.typeName = "kubernetes_" + strcase.ToSnake(typeMeta.Kind)
+		case "Status":
+			// skip
+		case "BinaryData":
+			// skip
+		default:
+			w.currentField = field.Name
+		}
+
+	}
+	return nil
+}
+
+func (w *walker) Primitive(v reflect.Value) error {
+	if v.CanAddr() && v.CanInterface() {
+		fmt.Printf("%sPrimitive: %s = %v\n", w.indent, w.currentField, v.Interface())
+	}
+	return nil
+}
+
+func (w *walker) Map(m reflect.Value) error {
+	fmt.Printf("%sMap [%s]: \n", w.indent, w.currentField)
+	return nil
+}
+
+func (w *walker) MapElem(m, k, v reflect.Value) error {
+	fmt.Printf("%sMapElem: \n", w.indent)
+	return nil
+}
+
 func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
+	w := NewWalker(dst)
+	reflectwalk.Walk(obj, w)
+
+	return
+
 	kubeKind := obj.GetObjectKind().GroupVersionKind().Kind
 	kubeVersion := obj.GetObjectKind().GroupVersionKind().Version
 
