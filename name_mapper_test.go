@@ -15,7 +15,7 @@ func TestToTerraformAttributeName(t *testing.T) {
 		want string
 	}{
 		{
-			"Replicas",
+			"replicas",
 			args{
 				reflect.StructField{
 					Name: "Replicas",
@@ -63,11 +63,65 @@ func TestToTerraformSubBlockName(t *testing.T) {
 			},
 			"port",
 		},
+		{
+			"match_labels",
+			args{
+				reflect.StructField{
+					Name: "MatchLabels",
+					Tag:  `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`,
+				},
+			},
+			"match_labels",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ToTerraformSubBlockName(tt.args.field); got != tt.want {
 				t.Errorf("ToTerraformSubBlockName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_normalizeTerraformName(t *testing.T) {
+	type args struct {
+		s          string
+		toSingular bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"labels",
+			args{
+				"labels",
+				true,
+			},
+			"labels",
+		},
+		{
+			"match_labels",
+			args{
+				"matchLabels",
+				true,
+			},
+			"match_labels",
+		},
+		{
+			"metadata",
+			args{
+				"metadata",
+				true,
+			},
+			"metadata",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := normalizeTerraformName(tt.args.s, tt.args.toSingular); got != tt.want {
+				t.Errorf("normalizeTerraformName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

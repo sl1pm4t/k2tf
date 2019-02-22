@@ -11,7 +11,13 @@ import (
 )
 
 func init() {
+	// add exceptions to the singularize all names rule
+	inflection.AddSingular("annotations", "annotations")
+	inflection.AddSingular("^(.*labels)$", "${1}")
+	inflection.AddSingular("limits", "limits")
 	inflection.AddSingular("metadata", "metadata")
+	inflection.AddSingular("resources", "resources")
+	inflection.AddSingular("requests", "requests")
 }
 
 // ToTerraformAttributeName takes the reflect.StructField data of a Kubernetes object attribute
@@ -40,6 +46,8 @@ func ToTerraformSubBlockName(field reflect.StructField) string {
 	return normalizeTerraformName(name, true)
 }
 
+// normalizeTerraformName converts the given string to snake case
+// and optionally to singular form of the given word
 func normalizeTerraformName(s string, toSingular bool) string {
 	if toSingular {
 		s = inflection.Singular(s)
@@ -48,6 +56,9 @@ func normalizeTerraformName(s string, toSingular bool) string {
 	return s
 }
 
+// extractJsonName inspects the StructField Tags to find the
+// name used in JSON marshaling. This more accurately reflects
+// the name expected by the API, and in turn the provider schema
 func extractJsonName(field reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
