@@ -144,6 +144,14 @@ func (w *walker) Struct(v reflect.Value) error {
 
 	}
 
+	// skip some Kubernetes structs that should be treated as Primitives instead
+	// we do this after opening the Block above because reflectwalk will still call
+	// Exit for this struct and we need the block Closes to marry up.
+	switch v.Interface().(type) {
+	case resource.Quantity:
+		return reflectwalk.SkipEntry
+	}
+
 	return nil
 }
 
