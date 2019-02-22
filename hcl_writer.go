@@ -584,6 +584,11 @@ func convertCtyValue(val interface{}) cty.Value {
 		}
 
 		return cty.ObjectVal(ctyMap)
+	case resource.Quantity:
+		qty := val.(resource.Quantity)
+		qtyPtr := &qty
+		return cty.StringVal(qtyPtr.String())
+
 	default:
 		fmt.Printf("[!] WARN: unhandled variable type: %T \n", val)
 		return cty.StringVal(fmt.Sprintf("%v", val))
