@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/mitchellh/reflectwalk"
 	"github.com/zclconf/go-cty/cty"
+	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -24,9 +25,11 @@ type walker struct {
 
 	isTopLevel bool
 
-	currentBlock *blk
-	currentField reflect.StructField
-	dst          *hclwrite.Body
+	currentBlock     *blk
+	currentField     reflect.StructField
+	skipField        bool
+	dst              *hclwrite.Body
+	ignoreSliceElems bool
 }
 
 // blk is a wrapper for hclwrite.Block that allows to tag some extra
@@ -43,8 +46,6 @@ type blk struct {
 func NewWalker(dst *hclwrite.Body) *walker {
 	w := &walker{}
 	w.isTopLevel = true
-	// topBlock := &blk{hcl: nil}
-	// w.currentBlock = topBlock
 	w.dst = dst
 
 	return w
@@ -61,6 +62,7 @@ func (w *walker) StartNewBlk(hcl *hclwrite.Block) *blk {
 }
 
 func (w *walker) CloseBlk() *blk {
+	w.debug(fmt.Sprint("closing ", w.currentField.Name))
 	parent := w.currentBlock.parent
 
 	if parent == nil {
@@ -70,16 +72,17 @@ func (w *walker) CloseBlk() *blk {
 		if w.currentBlock.hasValue {
 			parent.hasValue = true
 			parent.hcl.Body().AppendBlock(w.currentBlock.hcl)
+			w.currentBlock.hcl.Body().AppendNewline()
 		}
 
 		w.currentBlock = parent
-		w.currentBlock.hcl.Body().AppendNewline()
 	}
 	return w.currentBlock
 }
 
 // Enter is called by reflectwalk.Walk each time we enter a level
 func (w *walker) Enter(l reflectwalk.Location) error {
+	w.debug(fmt.Sprint("entering ", l))
 	if l == reflectwalk.WalkLoc {
 		w.isTopLevel = true
 	}
@@ -92,10 +95,12 @@ func (w *walker) Enter(l reflectwalk.Location) error {
 }
 
 func (w *walker) Exit(l reflectwalk.Location) error {
+	w.debug(fmt.Sprint("exiting ", l))
 	switch l {
 	case reflectwalk.Slice:
+		w.ignoreSliceElems = false
 		w.decreaseIndent()
-		fmt.Printf("%s]\n", w.indent)
+		w.debug(fmt.Sprint("]"))
 
 	case reflectwalk.Struct:
 		fallthrough
@@ -103,7 +108,7 @@ func (w *walker) Exit(l reflectwalk.Location) error {
 	case reflectwalk.Map:
 		w.CloseBlk()
 		w.decreaseIndent()
-		fmt.Printf("%s}\n", w.indent)
+		w.debug(fmt.Sprint("}"))
 
 	}
 
@@ -111,8 +116,11 @@ func (w *walker) Exit(l reflectwalk.Location) error {
 }
 
 func (w *walker) Struct(v reflect.Value) error {
+	if !v.CanInterface() {
+		return nil
+	}
 	ty := reflect.TypeOf(v.Interface())
-	fmt.Printf("%s%s {\n", w.indent, ty.Name())
+	w.debug(fmt.Sprintf("%s {\n", ty.Name()))
 
 	if w.isTopLevel {
 		w.isTopLevel = false
@@ -134,17 +142,12 @@ func (w *walker) Struct(v reflect.Value) error {
 }
 
 func (w *walker) StructField(field reflect.StructField, v reflect.Value) error {
-	// if field.Anonymous {
-	// 	fmt.Println("skipping anonymous ", field.Name)
-	// 	return reflectwalk.SkipEntry
-
-	// } else
 	if !v.IsValid() {
-		fmt.Println("skipping invalid ", field.Name)
+		w.debug(fmt.Sprint("skipping invalid ", field.Name))
 		return reflectwalk.SkipEntry
 
 	} else if ignoredField(field.Name) {
-		fmt.Println("ignoring ", field.Name)
+		w.debug(fmt.Sprint("ignoring ", field.Name))
 		return reflectwalk.SkipEntry
 
 	} else {
@@ -155,10 +158,8 @@ func (w *walker) StructField(field reflect.StructField, v reflect.Value) error {
 }
 
 func (w *walker) Primitive(v reflect.Value) error {
-	if v.CanAddr() && v.CanInterface() {
-		if debug {
-		fmt.Printf("%s%s = %v (%T)[%s]\n", w.indent, w.currentField.Name, v.Interface(), v.Interface(), w.currentField.Tag)
-		}
+	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
+		w.debug(fmt.Sprintf("%s = %v (%T)[%s]", w.currentField.Name, v.Interface(), v.Interface(), w.currentField.Tag))
 
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
@@ -172,10 +173,7 @@ func (w *walker) Primitive(v reflect.Value) error {
 }
 
 func (w *walker) Map(m reflect.Value) error {
-	if debug {
-	fmt.Printf("%s%s \n", w.indent, w.currentField.Name)
-	fmt.Printf("%s{\n", w.indent)
-	}
+	w.debug(fmt.Sprintf("%s {\n", w.currentField.Name))
 
 	blockName := ToTerraformSubBlockName(w.currentField)
 	hcl := hclwrite.NewBlock(blockName, nil)
@@ -185,7 +183,7 @@ func (w *walker) Map(m reflect.Value) error {
 }
 
 func (w *walker) MapElem(m, k, v reflect.Value) error {
-	fmt.Printf("%s    %s = %v (%T)\n", w.indent, k, v.Interface(), v.Interface())
+	w.debug(fmt.Sprintf("    %s = %v (%T)", k, v.Interface(), v.Interface()))
 
 	if !IsZero(v) {
 		w.currentBlock.hasValue = true
@@ -198,14 +196,60 @@ func (w *walker) MapElem(m, k, v reflect.Value) error {
 	return nil
 }
 
-func (w *walker) Slice(m reflect.Value) error {
-	fmt.Printf("%s%s [\n", w.indent, w.currentField.Name)
+func (w *walker) Slice(v reflect.Value) error {
+	if !v.IsValid() {
+		w.debug(fmt.Sprint("skipping invalid slice "))
+
+	} else if IsZero(v) {
+		w.debug(fmt.Sprint("skipping empty slice "))
+
+	} else {
+		w.debug(fmt.Sprintf("%s [\n", w.currentField.Name))
+		// determine type of slice elements
+		numEntries := v.Len()
+		var vt reflect.Type
+		if numEntries > 0 {
+			w.currentBlock.hasValue = true
+			vt = v.Index(0).Type()
+		}
+
+		switch {
+		case vt.Kind() == reflect.Struct:
+			// walk
+		case vt.Kind() == reflect.Ptr:
+			// walk
+
+		default:
+			valTy, err := gocty.ImpliedType(v.Interface())
+			if err != nil {
+				panic(fmt.Sprintf("cannot encode %T as HCL expression: %s", v.Interface(), err))
+			}
+
+			val, err := gocty.ToCtyValue(v.Interface(), valTy)
+			if err != nil {
+				// This should never happen, since we should always be able
+				// to decode into the implied type.
+				panic(fmt.Sprintf("failed to encode %T as %#v: %s", v.Interface(), valTy, err))
+			}
+
+			// primitive type
+			w.currentBlock.hasValue = true
+			w.currentBlock.hcl.Body().SetAttributeValue(
+				ToTerraformAttributeName(w.currentField),
+				val,
+			)
+
+			// don't need to walk through all Slice Elements, so return skip signal
+			w.ignoreSliceElems = true
+		}
+
+	}
 
 	return nil
 }
 
-func (w *walker) SliceElem(v reflect.Value) error {
-	fmt.Printf("%s%v [\n", w.indent, v.Interface())
+func (w *walker) SliceElem(i int, v reflect.Value) error {
+	// fmt.Printf("%s%v [\n", w.indent, v.Interface())
 	return nil
 }
 
@@ -516,32 +560,6 @@ func (w *walker) decreaseIndent() {
 // 	return blk
 // }
 
-// func WriteConfigMap(obj *corev1.ConfigMap, dst *hclwrite.Body) {
-// 	root := hclwrite.NewBlock("resource", []string{"kubernetes_config_map", obj.Name})
-// 	dst.AppendBlock(root)
-
-// 	root.Body().AppendBlock(encodeMetadataBlock(&obj.ObjectMeta))
-
-// 	if len(obj.Data) > 0 {
-// 		data := hclwrite.NewBlock("data", nil)
-// 		encodeMap(obj.Data, data.Body())
-// 		root.Body().AppendBlock(data)
-// 	}
-
-// }
-
-// func WriteDeployment(obj *v1.Deployment, dst *hclwrite.Body) {
-// 	root := hclwrite.NewBlock("resource", []string{"kubernetes_deployment", obj.Name})
-// 	dst.AppendBlock(root)
-
-// 	root.Body().AppendBlock(encodeMetadataBlock(&obj.ObjectMeta))
-
-// 	spec := hclwrite.NewBlock("spec", nil)
-// 	spec.Body().SetAttributeValue("replicas", convertCtyValue(obj.Spec.Replicas))
-
-// 	root.Body().AppendBlock(spec)
-// }
-
 func convertCtyValue(val interface{}) cty.Value {
 	switch val.(type) {
 	case string:
@@ -568,6 +586,7 @@ func convertCtyValue(val interface{}) cty.Value {
 		return cty.ObjectVal(ctyMap)
 	default:
 		fmt.Printf("[!] WARN: unhandled variable type: %T \n", val)
+		return cty.StringVal(fmt.Sprintf("%v", val))
 	}
 	return cty.NilVal
 }
@@ -606,4 +625,10 @@ func init() {
 func ignoredField(name string) bool {
 	_, ok := ignoredFieldMap[name]
 	return ok
+}
+
+func (w *walker) debug(s string) {
+	if debug {
+		fmt.Printf("%s%s\n", w.indent, s)
+	}
 }
