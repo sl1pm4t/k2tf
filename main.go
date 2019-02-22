@@ -8,8 +8,9 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/hclwrite"
-	// "github.com/sl1pm4t/ky2tf/kubetf"
 )
+
+var debug bool
 
 const ycm = `
 apiVersion: v1

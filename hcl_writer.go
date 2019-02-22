@@ -55,13 +55,7 @@ func (w *walker) StartNewBlk(hcl *hclwrite.Block) *blk {
 		parent: w.currentBlock,
 		hcl:    hcl,
 	}
-	// if w.currentBlock != nil {
-	// 	blk.parent = w.currentBlock
 
-	// } else {
-	// 	w.topBlock.hcl.Body().AppendBlock(hcl)
-
-	// }
 	w.currentBlock = blk
 	return blk
 }
@@ -104,10 +98,10 @@ func (w *walker) Exit(l reflectwalk.Location) error {
 		fmt.Printf("%s]\n", w.indent)
 
 	case reflectwalk.Struct:
-		w.CloseBlk()
 		fallthrough
 
 	case reflectwalk.Map:
+		w.CloseBlk()
 		w.decreaseIndent()
 		fmt.Printf("%s}\n", w.indent)
 
@@ -162,7 +156,9 @@ func (w *walker) StructField(field reflect.StructField, v reflect.Value) error {
 
 func (w *walker) Primitive(v reflect.Value) error {
 	if v.CanAddr() && v.CanInterface() {
+		if debug {
 		fmt.Printf("%s%s = %v (%T)[%s]\n", w.indent, w.currentField.Name, v.Interface(), v.Interface(), w.currentField.Tag)
+		}
 
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
@@ -176,14 +172,29 @@ func (w *walker) Primitive(v reflect.Value) error {
 }
 
 func (w *walker) Map(m reflect.Value) error {
+	if debug {
 	fmt.Printf("%s%s \n", w.indent, w.currentField.Name)
 	fmt.Printf("%s{\n", w.indent)
+	}
+
+	blockName := ToTerraformSubBlockName(w.currentField)
+	hcl := hclwrite.NewBlock(blockName, nil)
+	w.StartNewBlk(hcl)
 
 	return nil
 }
 
 func (w *walker) MapElem(m, k, v reflect.Value) error {
 	fmt.Printf("%s    %s = %v (%T)\n", w.indent, k, v.Interface(), v.Interface())
+
+	if !IsZero(v) {
+		w.currentBlock.hasValue = true
+		w.currentBlock.hcl.Body().SetAttributeValue(
+			k.String(),
+			convertCtyValue(v.Interface()),
+		)
+	}
+
 	return nil
 }
 
