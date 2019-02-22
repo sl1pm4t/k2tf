@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/hcl2/hclwrite"
 )
 
-var debug bool = true
+var debug bool = false
 
 func main() {
 	spew.Config.Indent = "\t"
