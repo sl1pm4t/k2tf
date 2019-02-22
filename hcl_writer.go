@@ -54,7 +54,10 @@ func NewWalker(dst *hclwrite.Body) *walker {
 	return w
 }
 
-func (w *walker) StartNewBlk(hcl *hclwrite.Block) *blk {
+// OpenBlk opens a new HCL resource block or sub-block
+// It creates a blk object so we can track hierarchy of blocks
+// within the resource tree
+func (w *walker) OpenBlk(hcl *hclwrite.Block) *blk {
 	blk := &blk{
 		parent: w.currentBlock,
 		hcl:    hcl,
@@ -132,12 +135,12 @@ func (w *walker) Struct(v reflect.Value) error {
 
 		// create top level HCL block
 		topLevelBlock := hclwrite.NewBlock("resource", []string{typeName, resName})
-		w.StartNewBlk(topLevelBlock)
+		w.OpenBlk(topLevelBlock)
 
 	} else {
 		blockName := ToTerraformSubBlockName(w.currentField)
 		hcl := hclwrite.NewBlock(blockName, nil)
-		w.StartNewBlk(hcl)
+		w.OpenBlk(hcl)
 
 	}
 
@@ -180,7 +183,7 @@ func (w *walker) Map(m reflect.Value) error {
 
 	blockName := ToTerraformSubBlockName(w.currentField)
 	hcl := hclwrite.NewBlock(blockName, nil)
-	w.StartNewBlk(hcl)
+	w.OpenBlk(hcl)
 
 	return nil
 }
