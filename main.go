@@ -11,6 +11,42 @@ import (
 	// "github.com/sl1pm4t/ky2tf/kubetf"
 )
 
+const ycm = `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fooConfigMap
+  namespace: bar
+  labels:
+    lbl1: somevalue
+    lbl2: another
+data:
+  item1: wow
+  item2: wee
+`
+
+const yd1 = `
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: baz-app
+  namespace: bat
+  annotations:
+    foo: fam
+spec:
+  replicas: 2
+  template:
+    metadata:
+      annotations:
+        foo: fam
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - port: 80
+`
+
 const y = `
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -65,7 +101,7 @@ data:
 
 func main() {
 	spew.Config.Indent = "\t"
-	r := strings.NewReader(y)
+	r := strings.NewReader(yd1)
 	objs, err := ParseK8SYAML(r)
 
 	if err != nil {

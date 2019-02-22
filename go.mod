@@ -16,6 +16,7 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.11.11
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
+	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/mitchellh/cli v1.0.0 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
