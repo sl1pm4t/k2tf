@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -21,7 +22,7 @@ func init() {
 // so we need to extract the JSON name from the StructField tag.
 // Finally, the attribute name is converted to snake case.
 func ToTerraformAttributeName(field reflect.StructField) string {
-	name := extractJsonName(field.Tag)
+	name := extractJsonName(field)
 
 	return normalizeTerraformName(name, false)
 }
@@ -34,7 +35,7 @@ func ToTerraformAttributeName(field reflect.StructField) string {
 // so we need to extract the JSON name from the StructField tag.
 // Next, the attribute name is converted to singular + snake case.
 func ToTerraformSubBlockName(field reflect.StructField) string {
-	name := extractJsonName(field.Tag)
+	name := extractJsonName(field)
 
 	return normalizeTerraformName(name, true)
 }
@@ -47,10 +48,11 @@ func normalizeTerraformName(s string, toSingular bool) string {
 	return s
 }
 
-func extractJsonName(tag reflect.StructTag) string {
-	jsonTag := tag.Get("json")
+func extractJsonName(field reflect.StructField) string {
+	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
-		panic("field has no json tag value")
+		fmt.Printf("WARNING - field [%s] has no json tag value", field.Name)
+		return field.Name
 	}
 
 	comma := strings.Index(jsonTag, ",")
