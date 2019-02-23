@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
@@ -15,9 +16,11 @@ func init() {
 	inflection.AddSingular("annotations", "annotations")
 	inflection.AddSingular("^(.*labels)$", "${1}")
 	inflection.AddSingular("limits", "limits")
-	inflection.AddSingular("metadata", "metadata")
 	inflection.AddSingular("resources", "resources")
 	inflection.AddSingular("requests", "requests")
+
+	inflection.AddUncountable("data")
+	inflection.AddUncountable("metadata")
 }
 
 // ToTerraformAttributeName takes the reflect.StructField data of a Kubernetes object attribute
@@ -62,8 +65,8 @@ func normalizeTerraformName(s string, toSingular bool) string {
 func extractJsonName(field reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
-		fmt.Printf("WARNING - field [%s] has no json tag value", field.Name)
-		return field.Name
+		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no json tag value", field.Name)
+		return extractProtobufName(field)
 	}
 
 	comma := strings.Index(jsonTag, ",")
@@ -77,6 +80,24 @@ func extractJsonName(field reflect.StructField) string {
 	return name
 }
 
+func extractProtobufName(field reflect.StructField) string {
+	protoTag := field.Tag.Get("protobuf")
+	if protoTag == "" {
+		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no protobuf tag", field.Name)
+		return field.Name
+	}
+
+	tagParts := strings.Split(",", protoTag)
+	for _, part := range tagParts {
+		if strings.Contains(part, "name=") {
+			return part[5:]
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "WARNING - field [%s] protobuf tag has no 'name'", field.Name)
+	return field.Name
+}
+
 func ToTerraformResourceType(v reflect.Value) string {
 	ty := reflect.TypeOf(v.Interface())
 	return "kubernetes_" + normalizeTerraformName(ty.Name(), true)
@@ -85,4 +106,11 @@ func ToTerraformResourceType(v reflect.Value) string {
 func ToTerraformResourceName(v reflect.Value) string {
 
 	return "foo"
+}
+
+func NormalizeTerraformMapKey(s string) string {
+	if strings.Contains(s, "/") {
+		return fmt.Sprintf(`"%s"`, s)
+	}
+	return s
 }

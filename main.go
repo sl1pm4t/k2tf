@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,11 +11,18 @@ import (
 	"github.com/hashicorp/hcl2/hclwrite"
 )
 
-var debug bool = false
+var debug bool
+
+func init() {
+	flag.BoolVar(&debug, "debug", false, "enable debug mode")
+
+	spew.Config.Indent = "\t"
+}
 
 func main() {
-	spew.Config.Indent = "\t"
-	r := strings.NewReader(yd1)
+	flag.Parse()
+
+	r := strings.NewReader(volumesYAML)
 	objs, err := ParseK8SYAML(r)
 
 	if err != nil {
