@@ -31,7 +31,7 @@ func init() {
 // so we need to extract the JSON name from the StructField tag.
 // Finally, the attribute name is converted to snake case.
 func ToTerraformAttributeName(field reflect.StructField) string {
-	name := extractJsonName(field)
+	name := extractProtobufName(field)
 
 	return normalizeTerraformName(name, false)
 }
@@ -44,7 +44,7 @@ func ToTerraformAttributeName(field reflect.StructField) string {
 // so we need to extract the JSON name from the StructField tag.
 // Next, the attribute name is converted to singular + snake case.
 func ToTerraformSubBlockName(field reflect.StructField) string {
-	name := extractJsonName(field)
+	name := extractProtobufName(field)
 
 	return normalizeTerraformName(name, true)
 }
@@ -65,7 +65,7 @@ func normalizeTerraformName(s string, toSingular bool) string {
 func extractJsonName(field reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
-		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no json tag value", field.Name)
+		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no json tag value\n", field.Name)
 		return extractProtobufName(field)
 	}
 
@@ -83,18 +83,18 @@ func extractJsonName(field reflect.StructField) string {
 func extractProtobufName(field reflect.StructField) string {
 	protoTag := field.Tag.Get("protobuf")
 	if protoTag == "" {
-		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no protobuf tag", field.Name)
+		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no protobuf tag\n", field.Name)
 		return field.Name
 	}
 
-	tagParts := strings.Split(",", protoTag)
+	tagParts := strings.Split(protoTag, ",")
 	for _, part := range tagParts {
 		if strings.Contains(part, "name=") {
 			return part[5:]
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "WARNING - field [%s] protobuf tag has no 'name'", field.Name)
+	fmt.Fprintf(os.Stderr, "WARNING - field [%s] protobuf tag has no 'name'\n", field.Name)
 	return field.Name
 }
 
