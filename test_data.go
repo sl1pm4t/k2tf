@@ -30,7 +30,8 @@ const configMapHCL = `resource "kubernetes_config_map" "foo" {
     item2 = "wee"
 
   }
-}`
+}
+`
 
 const basicDeploymentYAML = `
 apiVersion: apps/v1
