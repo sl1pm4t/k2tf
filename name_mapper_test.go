@@ -44,7 +44,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 		want string
 	}{
 		{
-			"Container",
+			"container",
 			args{
 				reflect.StructField{
 					Name: "Container",
@@ -54,7 +54,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 			"container",
 		},
 		{
-			"ContainerPort",
+			"port",
 			args{
 				reflect.StructField{
 					Name: "ContainerPort",
@@ -72,6 +72,16 @@ func TestToTerraformSubBlockName(t *testing.T) {
 				},
 			},
 			"match_labels",
+		},
+		{
+			"volume_source",
+			args{
+				reflect.StructField{
+					Name: "VolumeSource",
+					Tag:  `json:",inline" protobuf:"bytes,2,opt,name=volumeSource"`,
+				},
+			},
+			"volume_source",
 		},
 	}
 	for _, tt := range tests {
