@@ -67,6 +67,7 @@ func NewObjectWalker(dst *hclwrite.Body) *ObjectWalker {
 // It creates a blk object so we can track hierarchy of blocks
 // within the resource tree
 func (w *ObjectWalker) openBlk(hcl *hclwrite.Block) *blk {
+	w.debugf("opening blk for field %s", w.currentField.Name)
 	blk := &blk{
 		parent: w.currentBlock,
 		hcl:    hcl,
@@ -78,7 +79,7 @@ func (w *ObjectWalker) openBlk(hcl *hclwrite.Block) *blk {
 
 // closeBlk writes the generated HCL to the hclwriter
 func (w *ObjectWalker) closeBlk() *blk {
-	w.debug(fmt.Sprint("closing ", w.currentField.Name))
+	w.debugf("closing %s", w.currentField.Name)
 
 	parent := w.currentBlock.parent
 	current := w.currentBlock
@@ -98,20 +99,20 @@ func (w *ObjectWalker) closeBlk() *blk {
 
 			// Append HCL block in the appropriate location
 			if parent.inlined {
-				w.debug("parent is inlined")
+				w.debugf("appending HCL block to grandparent")
 				parent.parent.hcl.Body().AppendBlock(current.hcl)
+				current.hcl.Body().AppendNewline()
 
 			} else if current.inlined {
-				w.debug("closing inlined blk")
+				w.debugf("closing inlined blk")
 				// do nothing
 
 			} else {
-				w.debug("appending HCL block to parent")
+				w.debugf("appending HCL block to parent")
 				parent.hcl.Body().AppendBlock(current.hcl)
+				current.hcl.Body().AppendNewline()
 
 			}
-			current.hcl.Body().AppendNewline()
-
 		}
 
 		w.currentBlock = parent
@@ -146,7 +147,6 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 		fallthrough
 
 	case reflectwalk.Map:
-
 		w.closeBlk()
 		w.decreaseIndent()
 		w.debug(fmt.Sprint("}"))
@@ -409,7 +409,5 @@ func (w *ObjectWalker) debug(s string) {
 }
 
 func (w *ObjectWalker) debugf(format string, a ...interface{}) {
-	if debug {
-		fmt.Fprintf(os.Stderr, "%s%s\n", w.indent, fmt.Sprintf("%s", a))
-	}
+	w.debug(fmt.Sprintf(format, a...))
 }
