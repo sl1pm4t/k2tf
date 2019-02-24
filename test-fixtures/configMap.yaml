@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fooConfigMap
+  namespace: bar
+  labels:
+    lbl1: somevalue
+    lbl2: another
+data:
+  item1: wow
+  item2: wee
