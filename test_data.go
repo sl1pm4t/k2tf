@@ -130,13 +130,6 @@ const podNodeExporterFullHCL = `resource "kubernetes_pod" "node_exporter_7fth_7"
       "prometheus.io/scheme" = "http"
       "prometheus.io/scrape" = "true"
     }
-    owner_reference {
-      api_version          = "apps/v1"
-      kind                 = "DaemonSet"
-      name                 = "node-exporter"
-      controller           = true
-      block_owner_deletion = true
-    }
   }
   spec {
     volume {

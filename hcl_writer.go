@@ -430,7 +430,7 @@ var ignoredFields = []string{
 	"CreationTimestamp",
 	"DeletionTimestamp",
 	"Generation",
-	"OwnerReference",
+	"OwnerReferences",
 	"ResourceVersion",
 	"SelfLink",
 	"TypeMeta",
