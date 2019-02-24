@@ -5,7 +5,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// hclBlock is a wrapper for hclwrite.Block that allows to tag some extra
+// hclBlock is a wrapper for hclwrite.Block that allows tagging some extra
 // metadata to each block.
 type hclBlock struct {
 	name string
@@ -13,11 +13,11 @@ type hclBlock struct {
 	// The parent hclBlock to this hclBlock
 	parent *hclBlock
 
-	// The wrapped HCL configuration block
+	// The wrapped HCL block
 	hcl *hclwrite.Block
 
-	// hasValue means a child field of this block had a non-nil / empty value if
-	// this is false when closeBlk() is called, the block won't be appended to
+	// hasValue means a child field of this block had a non-nil / non-zero value.
+	// If this is false when closeBlk() is called, the block won't be appended to
 	// parent
 	hasValue bool
 
@@ -28,10 +28,9 @@ type hclBlock struct {
 	inlined bool
 }
 
-// we are closing a sub-block, write HCL to either:
-// - parent Blocks HCL body in most cases
-// - parent's parents HCL body if our parent is "inlined"
-// - do nothing if the current hclBlock is inlined
+// A child block is adding a sub-block, write HCL to:
+// - this hclBlock's hcl Body if this block is not inlined
+// - parent's HCL body if this block is "inlined"
 func (b *hclBlock) AppendBlock(hcl *hclwrite.Block) {
 	if b.inlined {
 		// append to parent
@@ -43,6 +42,9 @@ func (b *hclBlock) AppendBlock(hcl *hclwrite.Block) {
 	}
 }
 
+// A child block is adding an attribute, write HCL to:
+// - this hclBlock's hcl Body if this block is not inlined
+// - parent's HCL body if this block is "inlined"
 func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
 	if b.inlined {
 		// append to parent
