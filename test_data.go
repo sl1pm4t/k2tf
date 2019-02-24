@@ -14,7 +14,7 @@ data:
   item2: wee
 `
 
-const configMapHCL = `resource "kubernetes_config_map" "foo" {
+const configMapHCL = `resource "kubernetes_config_map" "foo_config_map" {
   metadata {
     name      = "fooConfigMap"
     namespace = "bar"
@@ -66,7 +66,7 @@ spec:
             memory: "1Gi"
 `
 
-const basicDeploymentHCL = `resource "kubernetes_deployment" "foo" {
+const basicDeploymentHCL = `resource "kubernetes_deployment" "baz_app" {
   metadata {
     name      = "baz-app"
     namespace = "bat"
@@ -220,7 +220,10 @@ status:
   qosClass: BestEffort
   startTime: 2018-09-10T23:29:43Z`
 
-const podVolumesOnlyHCL = `resource "kubernetes_pod" "foo" {
+const podVolumesOnlyHCL = `resource "kubernetes_pod" "pod_volumes_only" {
+  metadata {
+    name = "pod-volumes-only"
+  }
   spec {
     volume {
       name = "default-token-rkd4g"
@@ -242,6 +245,8 @@ const podVolumesOnlyHCL = `resource "kubernetes_pod" "foo" {
 
 const podVolumesOnlyYAML = `apiVersion: v1
 kind: Pod
+metadata:
+  name: pod-volumes-only
 spec:
   volumes:
   - name: default-token-rkd4g
