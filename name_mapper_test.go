@@ -7,7 +7,7 @@ import (
 
 func TestToTerraformAttributeName(t *testing.T) {
 	type args struct {
-		field reflect.StructField
+		field *reflect.StructField
 	}
 	tests := []struct {
 		name string
@@ -17,7 +17,7 @@ func TestToTerraformAttributeName(t *testing.T) {
 		{
 			"replicas",
 			args{
-				reflect.StructField{
+				&reflect.StructField{
 					Name: "Replicas",
 					Tag:  `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`,
 				},
@@ -36,7 +36,7 @@ func TestToTerraformAttributeName(t *testing.T) {
 
 func TestToTerraformSubBlockName(t *testing.T) {
 	type args struct {
-		field reflect.StructField
+		field *reflect.StructField
 	}
 	tests := []struct {
 		name string
@@ -46,7 +46,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 		{
 			"container",
 			args{
-				reflect.StructField{
+				&reflect.StructField{
 					Name: "Container",
 					Tag:  `json:"containers" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`,
 				},
@@ -56,7 +56,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 		{
 			"port",
 			args{
-				reflect.StructField{
+				&reflect.StructField{
 					Name: "ContainerPort",
 					Tag:  `json:"ports,omitempty" patchStrategy:"merge" patchMergeKey:"containerPort" protobuf:"bytes,6,rep,name=ports"`,
 				},
@@ -66,7 +66,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 		{
 			"match_labels",
 			args{
-				reflect.StructField{
+				&reflect.StructField{
 					Name: "MatchLabels",
 					Tag:  `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`,
 				},
@@ -76,7 +76,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 		{
 			"volume_source",
 			args{
-				reflect.StructField{
+				&reflect.StructField{
 					Name: "VolumeSource",
 					Tag:  `json:",inline" protobuf:"bytes,2,opt,name=volumeSource"`,
 				},

@@ -30,7 +30,7 @@ func init() {
 //   e.g. `type ContainerPort struct` -> "ports" in YAML
 // so we need to extract the JSON name from the StructField tag.
 // Finally, the attribute name is converted to snake case.
-func ToTerraformAttributeName(field reflect.StructField) string {
+func ToTerraformAttributeName(field *reflect.StructField) string {
 	name := extractProtobufName(field)
 
 	return normalizeTerraformName(name, false)
@@ -43,7 +43,7 @@ func ToTerraformAttributeName(field reflect.StructField) string {
 //   e.g. `type ContainerPort struct` -> "ports" in YAML
 // so we need to extract the JSON name from the StructField tag.
 // Next, the attribute name is converted to singular + snake case.
-func ToTerraformSubBlockName(field reflect.StructField) string {
+func ToTerraformSubBlockName(field *reflect.StructField) string {
 	name := extractProtobufName(field)
 
 	return normalizeTerraformName(name, true)
@@ -62,7 +62,7 @@ func normalizeTerraformName(s string, toSingular bool) string {
 // extractJsonName inspects the StructField Tags to find the
 // name used in JSON marshaling. This more accurately reflects
 // the name expected by the API, and in turn the provider schema
-func extractJsonName(field reflect.StructField) string {
+func extractJsonName(field *reflect.StructField) string {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
 		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no json tag value\n", field.Name)
@@ -80,7 +80,7 @@ func extractJsonName(field reflect.StructField) string {
 	return name
 }
 
-func extractProtobufName(field reflect.StructField) string {
+func extractProtobufName(field *reflect.StructField) string {
 	protoTag := field.Tag.Get("protobuf")
 	if protoTag == "" {
 		fmt.Fprintf(os.Stderr, "WARNING - field [%s] has no protobuf tag\n", field.Name)
@@ -98,16 +98,25 @@ func extractProtobufName(field reflect.StructField) string {
 	return field.Name
 }
 
+// ToTerraformResourceType converts a Kubernetes API Object Type name to the
+// equivalent `terraform-provider-kubernetes` schema name.
 func ToTerraformResourceType(v reflect.Value) string {
 	ty := reflect.TypeOf(v.Interface())
 	return "kubernetes_" + normalizeTerraformName(ty.Name(), true)
 }
 
+// ToTerraformResourceName extract the Kubernetes API Objects' name from the
+// ObjectMeta
 func ToTerraformResourceName(v reflect.Value) string {
 
 	return "foo"
 }
 
+// NormalizeTerraformMapKey converts Map keys to a form suitable for Terraform
+// HCL
+//
+// e.g. map keys that include certain characters ( '/' ) will be wrapped in
+// double quotes.
 func NormalizeTerraformMapKey(s string) string {
 	if strings.Contains(s, "/") {
 		return fmt.Sprintf(`"%s"`, s)
