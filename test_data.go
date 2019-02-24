@@ -21,14 +21,11 @@ const configMapHCL = `resource "kubernetes_config_map" "foo" {
     labels {
       lbl1 = "somevalue"
       lbl2 = "another"
-
     }
-
   }
   data {
     item1 = "wow"
     item2 = "wee"
-
   }
 }
 `
@@ -75,30 +72,23 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "foo" {
     namespace = "bat"
     annotations {
       foo = "fam"
-
     }
-
   }
   spec {
     replicas = 2
     selector {
       match_labels {
         app = "nginx"
-
       }
-
     }
     template {
       metadata {
         labels {
           app = "nginx"
-
         }
         annotations {
           foo = "fam"
-
         }
-
       }
       spec {
         container {
@@ -107,28 +97,20 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "foo" {
           args  = ["--debug", "--test"]
           port {
             container_port = 80
-
           }
           resources {
             limits {
               cpu    = "1"
               memory = "1Gi"
-
             }
             requests {
               cpu    = "1"
               memory = "512Mi"
-
             }
-
           }
-
         }
-
       }
-
     }
-
   }
 }
 `
@@ -245,11 +227,14 @@ const volumesHCL = `resource "kubernetes_pod" "foo" {
         secret {
           secret_name  = "default-token-rkd4g"
           default_mode = 420
-
         }
-
       }
-
+    volume {
+      name = "some-volume"
+      config_map {
+        default_mode = 420
+        name = "cm1"
+      }
     }
   }
 }
@@ -263,9 +248,8 @@ spec:
     secret:
       defaultMode: 420
       secretName: default-token-rkd4g
+  - name: some-volume
+    configMap:
+      defaultMode: 420
+      name: cm1
 `
-
-// - name: some-volume
-//   configMap:
-//     defaultMode: 420
-//     name: cm1
