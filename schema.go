@@ -19,29 +19,31 @@ func ResourceSchema(name string) *schema.Resource {
 }
 
 func SchemaSupportsAttribute(resName, attrName string) (bool, error) {
+	// fmt.Printf("SchemaSupportsAttribute -> resName=%s, attrName=%s\n", resName, attrName)
 	res := ResourceSchema(resName)
 
 	if res != nil {
 		attrParts := strings.Split(attrName, ".")
 		schemaMap := res.Schema
 
-		return search(schemaMap, attrParts, 0)
+		return search(schemaMap, attrParts)
 	}
 
 	return false, fmt.Errorf("could not find resource: %s", resName)
 }
 
-func search(m map[string]*schema.Schema, attrParts []string, depth int) (bool, error) {
-	searchKey := attrParts[depth]
+func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
+	searchKey := attrParts[0]
 	keys := make([]string, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
-	// fmt.Printf("search -> depth=%d, searchKey=%s, keys=%v\n", depth, searchKey, keys)
+	// fmt.Printf("search -> searchKey=%s in keys=%v\n", searchKey, keys)
 
 	if v, ok := m[searchKey]; ok {
 
-		if depth == len(attrParts)-1 {
+		if len(attrParts) == 1 {
+			// we hit the bottom of our search and found the attribute
 			return true, nil
 		}
 
@@ -49,11 +51,11 @@ func search(m map[string]*schema.Schema, attrParts []string, depth int) (bool, e
 			switch v.Elem.(type) {
 			case *schema.Resource:
 				res := v.Elem.(*schema.Resource)
-				return search(res.Schema, attrParts, depth+1)
+				return search(res.Schema, attrParts[1:])
 			}
 		}
 
 	}
 
-	return false, fmt.Errorf("could not find attribute <%v> in resource [depth=%d]", attrParts, depth)
+	return false, fmt.Errorf("could not find attribute <%v> in resource", attrParts)
 }

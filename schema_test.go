@@ -16,6 +16,24 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			"kubernetes_deployment.metadata",
+			args{
+				"kubernetes_deployment",
+				"metadata",
+			},
+			true,
+			false,
+		},
+		{
+			"kubernetes_pod.metadata.labels",
+			args{
+				"kubernetes_pod",
+				"metadata.labels",
+			},
+			true,
+			false,
+		},
+		{
 			"kubernetes_pod.metadata.name",
 			args{
 				"kubernetes_pod",
@@ -32,6 +50,15 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 			},
 			true,
 			false,
+		},
+		{
+			"kubernetes_deployment.spec.toleration",
+			args{
+				"kubernetes_deployment",
+				"spec.toleration",
+			},
+			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
