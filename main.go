@@ -22,7 +22,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	r := strings.NewReader(volumesYAML)
+	r := strings.NewReader(podVolumesOnlyYAML)
 	objs, err := ParseK8SYAML(r)
 
 	if err != nil {

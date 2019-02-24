@@ -220,27 +220,27 @@ status:
   qosClass: BestEffort
   startTime: 2018-09-10T23:29:43Z`
 
-const volumesHCL = `resource "kubernetes_pod" "foo" {
+const podVolumesOnlyHCL = `resource "kubernetes_pod" "foo" {
   spec {
     volume {
       name = "default-token-rkd4g"
-        secret {
-          secret_name  = "default-token-rkd4g"
-          default_mode = 420
-        }
+      secret {
+        secret_name  = "default-token-rkd4g"
+        default_mode = 420
       }
+    }
     volume {
       name = "some-volume"
       config_map {
+        name         = "cm1"
         default_mode = 420
-        name = "cm1"
       }
     }
   }
 }
 `
 
-const volumesYAML = `apiVersion: v1
+const podVolumesOnlyYAML = `apiVersion: v1
 kind: Pod
 spec:
   volumes:

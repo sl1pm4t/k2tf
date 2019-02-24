@@ -35,8 +35,8 @@ func TestWriteObject(t *testing.T) {
 		{
 			"PodVolumes",
 			args{
-				volumesYAML,
-				volumesHCL,
+				podVolumesOnlyYAML,
+				podVolumesOnlyHCL,
 			},
 		},
 	}
