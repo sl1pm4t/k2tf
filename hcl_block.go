@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -8,6 +10,7 @@ import (
 // hclBlock is a wrapper for hclwrite.Block that allows tagging some extra
 // metadata to each block.
 type hclBlock struct {
+	//
 	name string
 
 	// The parent hclBlock to this hclBlock
@@ -26,6 +29,10 @@ type hclBlock struct {
 	// a new block, and their child value is propagated up the hierarchy.
 	// See v1.Volume as an example
 	inlined bool
+
+	// inlined flags whether this block is supported in the Terraform Provider schema
+	// Unsupported blocks will be excluded from HCL rendering
+	unsupported bool
 }
 
 // A child block is adding a sub-block, write HCL to:
@@ -51,5 +58,16 @@ func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
 		b.parent.SetAttributeValue(name, val)
 	} else {
 		b.hcl.Body().SetAttributeValue(name, val)
+	}
+}
+
+func (b *hclBlock) GetFullSchemaName() string {
+	if b.parent != nil {
+		if b.inlined {
+			return b.parent.GetFullSchemaName()
+		}
+		return strings.TrimLeft(b.parent.GetFullSchemaName()+"."+b.name, ".")
+	} else {
+		return ""
 	}
 }
