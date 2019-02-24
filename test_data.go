@@ -115,7 +115,91 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "baz_app" {
 }
 `
 
-const prometheus_pod = `apiVersion: v1
+const podNodeExporterFullHCL = `resource "kubernetes_pod" "node_exporter_7fth_7" {
+  metadata {
+    name          = "node-exporter-7fth7"
+    generate_name = "node-exporter-"
+    namespace     = "prometheus"
+    labels {
+      controller-revision-hash = "2418008739"
+      name                     = "node-exporter"
+      pod-template-generation  = "1"
+    }
+    annotations {
+      "prometheus.io/port"   = "9100"
+      "prometheus.io/scheme" = "http"
+      "prometheus.io/scrape" = "true"
+    }
+    owner_reference {
+      api_version          = "apps/v1"
+      kind                 = "DaemonSet"
+      name                 = "node-exporter"
+      controller           = true
+      block_owner_deletion = true
+    }
+  }
+  spec {
+    volume {
+      name = "default-token-rkd4g"
+      secret {
+        secret_name  = "default-token-rkd4g"
+        default_mode = 420
+      }
+    }
+    container {
+      name  = "prom-node-exporter"
+      image = "prom/node-exporter"
+      port {
+        name           = "metrics"
+        container_port = 9100
+        protocol       = "TCP"
+      }
+      volume_mount {
+        name       = "default-token-rkd4g"
+        read_only  = true
+        mount_path = "/var/run/secrets/kubernetes.io/serviceaccount"
+      }
+      termination_message_path   = "/dev/termination-log"
+      termination_message_policy = "File"
+      image_pull_policy          = "Always"
+      security_context {
+        privileged = true
+      }
+    }
+    restart_policy                   = "Always"
+    termination_grace_period_seconds = 30
+    dns_policy                       = "ClusterFirst"
+    service_account_name             = "default"
+    service_account                  = "default"
+    automount_service_account_token  = true
+    node_name                        = "gke-cloudlogs-dev-default-pool-4a2a9dae-9b01"
+    host_pid                         = true
+    scheduler_name                   = "default-scheduler"
+    toleration {
+      key      = "node.kubernetes.io/not-ready"
+      operator = "Exists"
+      effect   = "NoExecute"
+    }
+    toleration {
+      key      = "node.kubernetes.io/unreachable"
+      operator = "Exists"
+      effect   = "NoExecute"
+    }
+    toleration {
+      key      = "node.kubernetes.io/disk-pressure"
+      operator = "Exists"
+      effect   = "NoSchedule"
+    }
+    toleration {
+      key      = "node.kubernetes.io/memory-pressure"
+      operator = "Exists"
+      effect   = "NoSchedule"
+    }
+  }
+}
+`
+
+const podNodeExporterFullYAML = `apiVersion: v1
 kind: Pod
 metadata:
   annotations:
@@ -258,3 +342,126 @@ spec:
       defaultMode: 420
       name: cm1
 `
+
+const serviceHCL = `resource "kubernetes_service" "nginx" {
+  metadata {
+    name = "nginx"
+    labels {
+      app = "nginx"
+    }
+  }
+  spec {
+    port {
+      name = "web"
+      port = 80
+    }
+    selector {
+      app = "nginx"
+    }
+    cluster_ip = "None"
+  }
+}
+`
+
+const serviceYAML = `apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nginx`
+
+const statefulSetHCL = `resource "kubernetes_stateful_set" "web" {
+  metadata {
+    name = "web"
+    labels {
+      app = "nginx"
+    }
+  }
+  spec {
+    replicas = 14
+    selector {
+      match_labels {
+        app = "nginx"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          app = "nginx"
+        }
+      }
+      spec {
+        container {
+          name  = "nginx"
+          image = "k8s.gcr.io/nginx-slim:0.8"
+          port {
+            name           = "web"
+            container_port = 80
+          }
+          volume_mount {
+            name       = "www"
+            mount_path = "/usr/share/nginx/html"
+          }
+        }
+      }
+    }
+    volume_claim_template {
+      metadata {
+        name = "www"
+      }
+      spec {
+        access_modes = ["ReadWriteOnce"]
+        resources {
+          requests {
+            storage = "1Gi"
+          }
+        }
+        storage_class_name = "thin-disk"
+      }
+    }
+    service_name = "nginx"
+  }
+}
+`
+const statefulSetYAML = `apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+  labels:
+    app: nginx
+spec:
+  serviceName: "nginx"
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 14
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: k8s.gcr.io/nginx-slim:0.8
+          ports:
+            - containerPort: 80
+              name: web
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: thin-disk`

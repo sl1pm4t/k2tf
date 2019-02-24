@@ -33,10 +33,31 @@ func TestWriteObject(t *testing.T) {
 			},
 		},
 		{
-			"PodVolumes",
+			"PodVolumesOnly",
 			args{
 				podVolumesOnlyYAML,
 				podVolumesOnlyHCL,
+			},
+		},
+		{
+			"PodNodeExporter",
+			args{
+				podNodeExporterFullYAML,
+				podNodeExporterFullHCL,
+			},
+		},
+		{
+			"Service",
+			args{
+				serviceYAML,
+				serviceHCL,
+			},
+		},
+		{
+			"StatefulSet",
+			args{
+				statefulSetYAML,
+				statefulSetHCL,
 			},
 		},
 	}
