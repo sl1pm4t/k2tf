@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/inflection"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/iancoleman/strcase"
 )
@@ -107,9 +109,10 @@ func ToTerraformResourceType(v reflect.Value) string {
 
 // ToTerraformResourceName extract the Kubernetes API Objects' name from the
 // ObjectMeta
-func ToTerraformResourceName(v reflect.Value) string {
+func ToTerraformResourceName(obj runtime.Object) string {
+	meta := objectMeta(obj)
 
-	return "foo"
+	return normalizeTerraformName(meta.Name, false)
 }
 
 // NormalizeTerraformMapKey converts Map keys to a form suitable for Terraform
@@ -122,4 +125,16 @@ func NormalizeTerraformMapKey(s string) string {
 		return fmt.Sprintf(`"%s"`, s)
 	}
 	return s
+}
+
+func objectMeta(obj runtime.Object) metav1.ObjectMeta {
+	v := reflect.ValueOf(obj)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	metaF := v.FieldByName("ObjectMeta")
+
+	return metaF.Interface().(metav1.ObjectMeta)
 }

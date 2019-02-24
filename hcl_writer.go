@@ -15,7 +15,7 @@ import (
 
 // WriteObject converts a Kubernetes runtime.Object to HCL
 func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
-	w := NewObjectWalker(dst)
+	w := NewObjectWalker(obj, dst)
 	reflectwalk.Walk(obj, w)
 
 	return
@@ -25,6 +25,8 @@ func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
 // It used to "walk" the Kubernetes API Objects structure and generate
 // an HCL document based on the values defined.
 type ObjectWalker struct {
+	RuntimeObject runtime.Object
+
 	// debug logging helper
 	depth  int
 	indent string
@@ -46,10 +48,12 @@ type ObjectWalker struct {
 
 // NewObjectWalker returns a new ObjectWalker object
 // dst is the hclwrite.Body where HCL blocks will be appended.
-func NewObjectWalker(dst *hclwrite.Body) *ObjectWalker {
-	w := &ObjectWalker{}
-	w.isTopLevel = true
-	w.dst = dst
+func NewObjectWalker(obj runtime.Object, dst *hclwrite.Body) *ObjectWalker {
+	w := &ObjectWalker{
+		RuntimeObject: obj,
+		isTopLevel:    true,
+		dst:           dst,
+	}
 
 	return w
 }
@@ -207,7 +211,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// e.g. resource "kubernetes_pod" "name" {
 		w.isTopLevel = false
 		typeName := ToTerraformResourceType(v)
-		resName := ToTerraformResourceName(v)
+		resName := ToTerraformResourceName(w.RuntimeObject)
 
 		// create the HCL block
 		topLevelBlock := hclwrite.NewBlock("resource", []string{typeName, resName})
@@ -265,7 +269,7 @@ func (w *ObjectWalker) StructField(field reflect.StructField, v reflect.Value) e
 }
 
 // Primitive is called whenever reflectwalk visits a Primitive value.
-// If it's not a zero value, add an Attribute to the current HCL Block
+// If it's not a zero value, add an Attribute to the current HCL Block.
 func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
 		w.debug(fmt.Sprintf("%s = %v (%T)[%s]", w.currentField.Name, v.Interface(), v.Interface(), w.currentField.Tag))
