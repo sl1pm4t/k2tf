@@ -25,7 +25,11 @@ func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
 // It used to "walk" the Kubernetes API Objects structure and generate
 // an HCL document based on the values defined.
 type ObjectWalker struct {
+	// The Kubernetes API Object to be walked
 	RuntimeObject runtime.Object
+
+	// Terraform resource type (e.g. kubernetes_pod)
+	ResourceType string
 
 	// debug logging helper
 	depth  int
@@ -134,7 +138,11 @@ func (w *ObjectWalker) closeBlk() *hclBlock {
 		w.dst.AppendBlock(current.hcl)
 
 	} else {
-		if current.hasValue {
+		if current.unsupported {
+			// don't append this block or child blocks
+			w.debugf("[INFO] - excluding [%s] because it's unsupported in Terraform schema\n", current.GetFullSchemaName())
+
+		} else if current.hasValue {
 			// communicate back up the tree that we found a non-zero value
 			parent.hasValue = true
 
@@ -210,12 +218,12 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// we need to create the top level HCL block
 		// e.g. resource "kubernetes_pod" "name" {
 		w.isTopLevel = false
-		typeName := ToTerraformResourceType(v)
+		w.ResourceType = ToTerraformResourceType(v)
 		resName := ToTerraformResourceName(w.RuntimeObject)
 
 		// create the HCL block
-		topLevelBlock := hclwrite.NewBlock("resource", []string{typeName, resName})
-		w.openBlk(typeName, topLevelBlock)
+		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType, resName})
+		w.openBlk(w.ResourceType, topLevelBlock)
 
 	} else {
 		// this struct is a sub-block, create a new HCL block and add to parent
@@ -233,6 +241,12 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blk := w.openBlk(blockName, hclwrite.NewBlock(blockName, nil))
 		blk.inlined = IsInlineStruct(field)
 
+		var err error
+		supported, err := SchemaSupportsAttribute(w.ResourceType, blk.GetFullSchemaName())
+		if err != nil {
+			w.debugf("[WARN] - error while validating attribute against schema")
+		}
+		blk.unsupported = !supported
 	}
 
 	// skip some Kubernetes structs that should be treated as Primitives instead

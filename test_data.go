@@ -168,26 +168,6 @@ const podNodeExporterFullHCL = `resource "kubernetes_pod" "node_exporter_7fth_7"
     node_name                        = "gke-cloudlogs-dev-default-pool-4a2a9dae-9b01"
     host_pid                         = true
     scheduler_name                   = "default-scheduler"
-    toleration {
-      key      = "node.kubernetes.io/not-ready"
-      operator = "Exists"
-      effect   = "NoExecute"
-    }
-    toleration {
-      key      = "node.kubernetes.io/unreachable"
-      operator = "Exists"
-      effect   = "NoExecute"
-    }
-    toleration {
-      key      = "node.kubernetes.io/disk-pressure"
-      operator = "Exists"
-      effect   = "NoSchedule"
-    }
-    toleration {
-      key      = "node.kubernetes.io/memory-pressure"
-      operator = "Exists"
-      effect   = "NoSchedule"
-    }
   }
 }
 `
