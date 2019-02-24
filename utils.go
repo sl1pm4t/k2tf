@@ -27,7 +27,7 @@ func IsZero(v reflect.Value) bool {
 	return false
 }
 
-func IsInlineStruct(field reflect.StructField) bool {
+func IsInlineStruct(field *reflect.StructField) bool {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
 		fmt.Printf("WARNING - field [%s] has no json tag value", field.Name)
@@ -38,7 +38,7 @@ func IsInlineStruct(field reflect.StructField) bool {
 	if comma == -1 {
 		return false
 	} else {
-		tagParts := strings.Split(",", jsonTag)
+		tagParts := strings.Split(jsonTag, ",")
 		for _, part := range tagParts {
 			if part == "inline" {
 				return true
