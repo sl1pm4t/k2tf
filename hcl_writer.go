@@ -278,7 +278,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
 				ToTerraformAttributeName(w.currentField),
-				convertCtyValue(v.Interface()),
+				w.convertCtyValue(v.Interface()),
 			)
 		}
 	}
@@ -304,7 +304,7 @@ func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 		w.currentBlock.hasValue = true
 		w.currentBlock.hcl.Body().SetAttributeValue(
 			NormalizeTerraformMapKey(k.String()),
-			convertCtyValue(v.Interface()),
+			w.convertCtyValue(v.Interface()),
 		)
 	}
 
@@ -384,29 +384,7 @@ func (w *ObjectWalker) decreaseIndent() {
 	w.indent = w.indent[:len(w.indent)-2]
 }
 
-// func encodeMetadataBlock(meta *metav1.ObjectMeta) *hclwrite.Block {
-// 	blk := hclwrite.NewBlock("metadata", nil)
-// 	blk.Body().SetAttributeValue("name", convertCtyValue(meta.Name))
-
-// 	if meta.Namespace != "" {
-// 		blk.Body().SetAttributeValue("namespace", convertCtyValue(meta.Namespace))
-// 	}
-
-// 	if len(meta.Labels) > 0 {
-// 		lbls := hclwrite.NewBlock("labels", nil)
-// 		encodeMap(meta.Labels, lbls.Body())
-// 		blk.Body().AppendBlock(lbls)
-// 	}
-
-// 	if len(meta.Annotations) > 0 {
-// 		anno := hclwrite.NewBlock("annotations", nil)
-// 		encodeMap(meta.Annotations, anno.Body())
-// 		blk.Body().AppendBlock(anno)
-// 	}
-// 	return blk
-// }
-
-func convertCtyValue(val interface{}) cty.Value {
+func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 	switch val.(type) {
 	case string:
 		return cty.StringVal(val.(string))
@@ -426,7 +404,7 @@ func convertCtyValue(val interface{}) cty.Value {
 	case map[string]interface{}:
 		ctyMap := map[string]cty.Value{}
 		for k, v := range val.(map[string]interface{}) {
-			ctyMap[k] = convertCtyValue(v)
+			ctyMap[k] = w.convertCtyValue(v)
 		}
 
 		return cty.ObjectVal(ctyMap)
@@ -436,11 +414,14 @@ func convertCtyValue(val interface{}) cty.Value {
 		return cty.StringVal(qtyPtr.String())
 
 	default:
-		fmt.Fprintf(os.Stderr, "[WARN]: unhandled variable type: %T \n", val)
-
 		if s, ok := val.(fmt.Stringer); ok {
 			return cty.StringVal(s.String())
 		}
+
+		w.debugf("[WARN]: unhandled variable type: %T \n", val)
+
+		// last resort
+		return cty.StringVal(fmt.Sprintf("%s", val))
 	}
 	return cty.NilVal
 }
@@ -449,11 +430,12 @@ var ignoredFields = []string{
 	"CreationTimestamp",
 	"DeletionTimestamp",
 	"Generation",
-	"SelfLink",
-	"UID",
+	"OwnerReference",
 	"ResourceVersion",
+	"SelfLink",
 	"TypeMeta",
 	"Status",
+	"UID",
 }
 var ignoredFieldMap map[string]bool
 
