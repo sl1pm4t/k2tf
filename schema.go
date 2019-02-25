@@ -8,6 +8,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
 )
 
+// ResourceSchema returns the named Terraform Provider Resource schema
+// as defined in the `terraform-provider-kubernetes` package
 func ResourceSchema(name string) *schema.Resource {
 	prov := kubernetes.Provider().(*schema.Provider)
 
@@ -18,18 +20,19 @@ func ResourceSchema(name string) *schema.Resource {
 	return nil
 }
 
-func SchemaSupportsAttribute(resName, attrName string) (bool, error) {
+// SchemaSupportsAttribute scans the Terraform resource to determine if the named
+// attribute is supported.
+func SchemaSupportsAttribute(attrName string) (bool, error) {
 	// fmt.Printf("SchemaSupportsAttribute -> resName=%s, attrName=%s\n", resName, attrName)
-	res := ResourceSchema(resName)
 
-	if res != nil {
-		attrParts := strings.Split(attrName, ".")
-		schemaMap := res.Schema
-
-		return search(schemaMap, attrParts)
+	attrParts := strings.Split(attrName, ".")
+	res := ResourceSchema(attrParts[0])
+	if res == nil {
+		return false, fmt.Errorf("could not find resource: %s", attrParts[0])
 	}
+	schemaMap := res.Schema
 
-	return false, fmt.Errorf("could not find resource: %s", resName)
+	return search(schemaMap, attrParts[1:])
 }
 
 func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {

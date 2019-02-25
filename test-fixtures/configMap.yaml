@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: fooConfigMap
+  name: foo-config-map
   namespace: bar
   labels:
     lbl1: somevalue

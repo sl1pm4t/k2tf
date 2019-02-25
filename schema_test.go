@@ -6,7 +6,6 @@ import (
 
 func TestSchemaSupportsAttribute(t *testing.T) {
 	type args struct {
-		resName  string
 		attrName string
 	}
 	tests := []struct {
@@ -18,8 +17,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		{
 			"kubernetes_deployment.metadata",
 			args{
-				"kubernetes_deployment",
-				"metadata",
+				"kubernetes_deployment.metadata",
 			},
 			true,
 			false,
@@ -27,8 +25,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		{
 			"kubernetes_pod.metadata.labels",
 			args{
-				"kubernetes_pod",
-				"metadata.labels",
+				"kubernetes_pod.metadata.labels",
 			},
 			true,
 			false,
@@ -36,8 +33,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		{
 			"kubernetes_pod.metadata.name",
 			args{
-				"kubernetes_pod",
-				"metadata.name",
+				"kubernetes_pod.metadata.name",
 			},
 			true,
 			false,
@@ -45,8 +41,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		{
 			"kubernetes_deployment.spec.template.spec.container.name",
 			args{
-				"kubernetes_deployment",
-				"spec.template.spec.container.name",
+				"kubernetes_deployment.spec.template.spec.container.name",
 			},
 			true,
 			false,
@@ -54,8 +49,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 		{
 			"kubernetes_deployment.spec.toleration",
 			args{
-				"kubernetes_deployment",
-				"spec.toleration",
+				"kubernetes_deployment.spec.toleration",
 			},
 			false,
 			true,
@@ -63,7 +57,7 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := SchemaSupportsAttribute(tt.args.resName, tt.args.attrName)
+			got, err := SchemaSupportsAttribute(tt.args.attrName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SchemaSupportsAttribute() error = %v, wantErr %v", err, tt.wantErr)
 				return

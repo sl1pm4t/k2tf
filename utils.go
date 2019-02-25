@@ -27,6 +27,10 @@ func IsZero(v reflect.Value) bool {
 	return false
 }
 
+// IsInlineStruct looks at the json tag of the given StructField, to determine
+// if it has been marked as "inline"
+// e.g. someField string `json:",inline"`
+//
 func IsInlineStruct(field *reflect.StructField) bool {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {

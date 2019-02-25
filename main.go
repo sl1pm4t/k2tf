@@ -5,20 +5,20 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/hcl2/hclwrite"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // Command line flags
 var (
-	debug  bool
-	input  string
-	output string
+	debug bool
+	input string
+	// output string
 )
 
 func init() {
@@ -27,9 +27,11 @@ func init() {
 	const inputUsage = `file or directory that contains the YAML configuration to convert.` // TODO: Use "-" to read from stdin`
 	flag.StringVar(&input, "filepath", "-", inputUsage)
 	flag.StringVar(&input, "f", "-", inputUsage+" (shorthand)")
-	const outputUsage = `file or directory where Terraform config will be written`
-	flag.StringVar(&output, "output", "-", outputUsage)
-	flag.StringVar(&output, "o", "-", outputUsage+" (shorthand)")
+	// const outputUsage = `file or directory where Terraform config will be written`
+	// flag.StringVar(&output, "output", "-", outputUsage)
+	// flag.StringVar(&output, "o", "-", outputUsage+" (shorthand)")
+
+	log.SetOutput(os.Stderr)
 }
 
 func main() {
@@ -73,6 +75,7 @@ func readInput() []runtime.Object {
 	}
 
 	if fs.Mode().IsDir() {
+		// read directory
 		dirContents, err := file.Readdirnames(0)
 		if err != nil {
 			log.Fatal(err)
@@ -85,7 +88,8 @@ func readInput() []runtime.Object {
 		}
 
 	} else {
-		readFile(fs.Name())
+		// read single file
+		readFile(input)
 
 	}
 

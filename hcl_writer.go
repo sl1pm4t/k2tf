@@ -242,7 +242,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blk.inlined = IsInlineStruct(field)
 
 		var err error
-		supported, err := SchemaSupportsAttribute(w.ResourceType, blk.GetFullSchemaName())
+		supported, err := SchemaSupportsAttribute(blk.GetFullSchemaName())
 		if err != nil {
 			w.debugf("[WARN] - error while validating attribute against schema")
 		}

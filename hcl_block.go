@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl2/hclwrite"
+	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -53,21 +54,32 @@ func (b *hclBlock) AppendBlock(hcl *hclwrite.Block) {
 // - this hclBlock's hcl Body if this block is not inlined
 // - parent's HCL body if this block is "inlined"
 func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
-	if b.inlined {
-		// append to parent
-		b.parent.SetAttributeValue(name, val)
+	if b.isSupportedAttribute(b.GetFullSchemaName() + "." + name) {
+		if b.inlined {
+			// append to parent
+			b.parent.SetAttributeValue(name, val)
+		} else {
+			b.hcl.Body().SetAttributeValue(name, val)
+		}
 	} else {
-		b.hcl.Body().SetAttributeValue(name, val)
+		log.Debugf("skipping attribute: %s - not supported by provider", name)
+
 	}
 }
 
 func (b *hclBlock) GetFullSchemaName() string {
+	parentName := ""
 	if b.parent != nil {
-		if b.inlined {
-			return b.parent.GetFullSchemaName()
-		}
-		return strings.TrimLeft(b.parent.GetFullSchemaName()+"."+b.name, ".")
-	} else {
-		return ""
+		parentName = b.parent.GetFullSchemaName()
 	}
+
+	if b.inlined {
+		return parentName
+	}
+	return strings.TrimLeft(parentName+"."+b.name, ".")
+}
+
+func (b *hclBlock) isSupportedAttribute(name string) bool {
+	supported, _ := SchemaSupportsAttribute(name)
+	return supported
 }
