@@ -249,7 +249,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 
 		var err error
 		supported, err := SchemaSupportsAttribute(blk.FullSchemaName())
-		if err != nil {
+		if err != nil && err != attrNotFoundError {
 			log.Warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
 		blk.unsupported = !supported
@@ -425,7 +425,7 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 			return cty.StringVal(s.String())
 		}
 
-		log.Warn().Msg(fmt.Sprintf("unhandled variable type: %T", val))
+		log.Debug().Msg(fmt.Sprintf("unhandled variable type: %T", val))
 
 		// last resort
 		return cty.StringVal(fmt.Sprintf("%s", val))
