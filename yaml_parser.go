@@ -38,3 +38,16 @@ func ParseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 
 	return objs, result
 }
+
+func ParseK8SJSON(doc []byte) (runtime.Object, error) {
+	var result error
+
+	d := scheme.Codecs.UniversalDeserializer()
+	obj, _, err := d.Decode(doc, nil, nil)
+	if err != nil {
+		wrapped := fmt.Errorf("could not decode JSON object: %s", err)
+		result = multierror.Append(result, wrapped)
+	}
+
+	return obj, result
+}
