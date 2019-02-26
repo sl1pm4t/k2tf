@@ -8,6 +8,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
 )
 
+var attrNotFoundError = fmt.Errorf("could not find attribute in resource schema")
+
 // ResourceSchema returns the named Terraform Provider Resource schema
 // as defined in the `terraform-provider-kubernetes` package
 func ResourceSchema(name string) *schema.Resource {
@@ -41,10 +43,8 @@ func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
 	for k := range m {
 		keys = append(keys, k)
 	}
-	// fmt.Printf("search -> searchKey=%s in keys=%v\n", searchKey, keys)
 
 	if v, ok := m[searchKey]; ok {
-
 		if len(attrParts) == 1 {
 			// we hit the bottom of our search and found the attribute
 			return true, nil
@@ -60,5 +60,5 @@ func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
 
 	}
 
-	return false, fmt.Errorf("could not find attribute <%v> in resource", attrParts)
+	return false, attrNotFoundError
 }
