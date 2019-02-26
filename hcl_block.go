@@ -54,7 +54,7 @@ func (b *hclBlock) AppendBlock(hcl *hclwrite.Block) {
 // - this hclBlock's hcl Body if this block is not inlined
 // - parent's HCL body if this block is "inlined"
 func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
-	if b.isSupportedAttribute(b.GetFullSchemaName() + "." + name) {
+	if includeUnsupported || b.isSupportedAttribute(b.FullSchemaName()+"."+name) {
 		if b.inlined {
 			// append to parent
 			b.parent.SetAttributeValue(name, val)
@@ -67,10 +67,10 @@ func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
 	}
 }
 
-func (b *hclBlock) GetFullSchemaName() string {
+func (b *hclBlock) FullSchemaName() string {
 	parentName := ""
 	if b.parent != nil {
-		parentName = b.parent.GetFullSchemaName()
+		parentName = b.parent.FullSchemaName()
 	}
 
 	if b.inlined {

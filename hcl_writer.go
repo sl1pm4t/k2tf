@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/mitchellh/reflectwalk"
+	"github.com/rs/zerolog/log"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -44,7 +44,7 @@ type ObjectWalker struct {
 	fields       []*reflect.StructField
 	currentField *reflect.StructField
 
-	// FML slices of structs
+	// slices of structs
 	sliceField       *reflect.StructField
 	sliceElemTypes   []reflect.Type
 	ignoreSliceElems bool
@@ -133,14 +133,15 @@ func (w *ObjectWalker) closeBlk() *hclBlock {
 	parent := w.currentBlock.parent
 	current := w.currentBlock
 
+	// TODO: move append logic to hcl_block to be consistent
 	if parent == nil {
 		// we are closing the top level block, write directly to HCL File
 		w.dst.AppendBlock(current.hcl)
 
 	} else {
-		if current.unsupported {
+		if !includeUnsupported && current.unsupported {
 			// don't append this block or child blocks
-			w.debugf("[INFO] - excluding [%s] because it's unsupported in Terraform schema\n", current.GetFullSchemaName())
+			log.Warn().Str("attribute", current.FullSchemaName()).Msg("excluding attribute because it's unsupported in Terraform schema")
 
 		} else if current.hasValue {
 			// communicate back up the tree that we found a non-zero value
@@ -185,7 +186,6 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 		}
 		w.ignoreSliceElems = false
 		w.decreaseIndent()
-		w.debug(fmt.Sprint("]"))
 
 	case reflectwalk.Struct:
 		fallthrough
@@ -193,7 +193,6 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 	case reflectwalk.Map:
 		w.closeBlk()
 		w.decreaseIndent()
-		w.debug(fmt.Sprint("}"))
 
 	case reflectwalk.StructField:
 		w.fieldPop()
@@ -205,14 +204,12 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 
 // Struct is called every time reflectwalk enters a Struct
 //
-//
 func (w *ObjectWalker) Struct(v reflect.Value) error {
 	if !v.CanInterface() {
 		return nil
 	}
 
 	ty := reflect.TypeOf(v.Interface())
-	w.debug(fmt.Sprintf("%s {\n", ty.Name()))
 
 	if w.isTopLevel {
 		// we need to create the top level HCL block
@@ -242,9 +239,9 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blk.inlined = IsInlineStruct(field)
 
 		var err error
-		supported, err := SchemaSupportsAttribute(blk.GetFullSchemaName())
+		supported, err := SchemaSupportsAttribute(blk.FullSchemaName())
 		if err != nil {
-			w.debugf("[WARN] - error while validating attribute against schema")
+			log.Warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
 		blk.unsupported = !supported
 	}
@@ -299,8 +296,6 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 
 // Map is called everytime reflectwalk enters a Map
 func (w *ObjectWalker) Map(m reflect.Value) error {
-	w.debug(fmt.Sprintf("%s {\n", w.currentField.Name))
-
 	blockName := ToTerraformSubBlockName(w.currentField)
 	hcl := hclwrite.NewBlock(blockName, nil)
 	w.openBlk(blockName, hcl)
@@ -334,7 +329,6 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 		w.ignoreSliceElems = true
 
 	} else {
-		w.debug(fmt.Sprintf("%s [\n", w.currentField.Name))
 		// determine type of slice elements
 		numEntries := v.Len()
 		var vt reflect.Type
@@ -356,14 +350,14 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 		default:
 			valTy, err := gocty.ImpliedType(v.Interface())
 			if err != nil {
-				panic(fmt.Sprintf("cannot encode %T as HCL expression: %s", v.Interface(), err))
+				log.Panic().Interface("cannot encode %T as HCL expression", v.Interface()).Err(err)
 			}
 
 			val, err := gocty.ToCtyValue(v.Interface(), valTy)
 			if err != nil {
 				// This should never happen, since we should always be able
 				// to decode into the implied type.
-				panic(fmt.Sprintf("failed to encode %T as %#v: %s", v.Interface(), valTy, err))
+				log.Panic().Interface("failed to encode", v.Interface()).Interface("as %#v", valTy).Err(err)
 			}
 
 			// primitive type
@@ -430,7 +424,7 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 			return cty.StringVal(s.String())
 		}
 
-		w.debugf("[WARN]: unhandled variable type: %T \n", val)
+		log.Warn().Msg(fmt.Sprintf("unhandled variable type: %T", val))
 
 		// last resort
 		return cty.StringVal(fmt.Sprintf("%s", val))
@@ -463,10 +457,26 @@ func ignoredField(name string) bool {
 	return ok
 }
 
+func (w *ObjectWalker) info(s string) {
+	log.Info().
+		Str("rtype", w.ResourceType).
+		Str("current", w.currentBlock.FullSchemaName()).
+		Msg(s)
+}
+
+func (w *ObjectWalker) infof(format string, a ...interface{}) {
+	w.info(fmt.Sprintf(format, a...))
+}
+
 func (w *ObjectWalker) debug(s string) {
-	if debug {
-		fmt.Fprintf(os.Stderr, "%s%s\n", w.indent, s)
+	e := log.Debug().
+		Str("rtype", w.ResourceType)
+
+	if w.currentBlock != nil {
+		e = e.Str("current", w.currentBlock.FullSchemaName())
 	}
+
+	e.Msg(s)
 }
 
 func (w *ObjectWalker) debugf(format string, a ...interface{}) {

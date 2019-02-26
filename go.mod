@@ -1,7 +1,6 @@
-module github.com/sl1pm4t/ky2tf
+module github.com/sl1pm4t/k2tf
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/go-getter v1.0.3 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
@@ -12,7 +11,9 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0
+	github.com/rs/zerolog v1.11.0
 	github.com/sirupsen/logrus v1.3.0
+	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
 	github.com/terraform-providers/terraform-provider-kubernetes v1.5.1
 	github.com/zclconf/go-cty v0.0.0-20190201220620-4ca19710f056
