@@ -236,6 +236,15 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blockName := ToTerraformSubBlockName(field)
 		w.debugf("creating blk [%s] for field [%s]", blockName, field.Name)
 		blk := w.openBlk(blockName, hclwrite.NewBlock(blockName, nil))
+
+		// Skip some Kubernetes complex types that should be treated as Primitives.
+		// Do this after opening the Block above because reflectwalk will
+		// still call Exit for this struct and we need the calls to closeBlk() to marry up
+		switch v.Interface().(type) {
+		case resource.Quantity:
+			return reflectwalk.SkipEntry
+		}
+
 		blk.inlined = IsInlineStruct(field)
 
 		var err error
@@ -244,14 +253,6 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 			log.Warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
 		blk.unsupported = !supported
-	}
-
-	// skip some Kubernetes complex types that should be treated as Primitives
-	// instead we do this after opening the Block above because reflectwalk will
-	// still call Exit for this struct and we need the calls to close to marry up
-	switch v.Interface().(type) {
-	case resource.Quantity:
-		return reflectwalk.SkipEntry
 	}
 
 	return nil
