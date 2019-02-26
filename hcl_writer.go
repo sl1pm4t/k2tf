@@ -249,14 +249,12 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blk.unsupported = !supported
 	}
 
-	// skip some Kubernetes structs that should be treated as Primitives instead
-	// we do this after opening the Block above because reflectwalk will still
-	// call Exit for this struct and we need the calls to close to marry up
+	// skip some Kubernetes complex types that should be treated as Primitives
+	// instead we do this after opening the Block above because reflectwalk will
+	// still call Exit for this struct and we need the calls to close to marry up
 	switch v.Interface().(type) {
 	case resource.Quantity:
 		return reflectwalk.SkipEntry
-		// case resource.Quantity:
-		// 	return reflectwalk.SkipEntry
 	}
 
 	return nil
