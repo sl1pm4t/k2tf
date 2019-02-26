@@ -134,7 +134,7 @@ func TestWriteObject(t *testing.T) {
 
 			hclOut := string(f.Bytes())
 
-			// FIXME: flaky due to ordering of attributes
+			// FIXME: flaky test due to ordering of attributes
 			assert.Equal(t, tt.args.hcl, hclOut, "HCL should be equal")
 
 			assert.True(t, validateTerraformConfig(t, tt.args.resourceType, f.Bytes()), "HCL should pass provider validation")
@@ -148,8 +148,8 @@ func validateTerraformConfig(t *testing.T, resourceType string, hcl []byte) bool
 	if err != nil {
 		log.Fatal(err)
 	}
-	// defer os.RemoveAll(tmpDir)
-	t.Logf("tmpdir = %s", tmpDir)
+	defer os.RemoveAll(tmpDir)
+	// t.Logf("tmpdir = %s", tmpDir)
 
 	// Write the file
 	ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
@@ -157,7 +157,7 @@ func validateTerraformConfig(t *testing.T, resourceType string, hcl []byte) bool
 	// Invoke terraform to load config
 	cfg, err := config.LoadDir(tmpDir)
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
 	}
 
 	// extract our resources rawConfig
@@ -165,15 +165,12 @@ func validateTerraformConfig(t *testing.T, resourceType string, hcl []byte) bool
 
 	// validate against the Kubernetes provider
 	prov := kubernetes.Provider().(*schema.Provider)
-	results, errs := prov.ValidateResource(resourceType, rsrcConfig)
+	_, errs := prov.ValidateResource(resourceType, rsrcConfig)
 
 	if len(errs) > 0 {
 		// log validation errors
 		for i, v := range errs {
-			t.Logf("Validation Error: %d> %v\n", i, v)
-		}
-		for i, v := range results {
-			t.Logf("%d: %v\n", i, v)
+			t.Errorf("Validation Error: %d> %v\n", i, v)
 		}
 
 		return false
