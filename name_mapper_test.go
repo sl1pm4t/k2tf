@@ -3,6 +3,11 @@ package main
 import (
 	"reflect"
 	"testing"
+
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestToTerraformAttributeName(t *testing.T) {
@@ -132,6 +137,58 @@ func Test_normalizeTerraformName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := normalizeTerraformName(tt.args.s, tt.args.toSingular); got != tt.want {
 				t.Errorf("normalizeTerraformName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToTerraformResourceType(t *testing.T) {
+	type args struct {
+		obj runtime.Object
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			"Pod",
+			args{
+				obj: &v1.Pod{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "Pod",
+					},
+				},
+			},
+			"kubernetes_pod",
+		},
+		{
+			"Deployment",
+			args{
+				obj: &appsv1.Deployment{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "Deployment",
+					},
+				},
+			},
+			"kubernetes_deployment",
+		},
+		{
+			"Service",
+			args{
+				obj: &v1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "Service",
+					},
+				},
+			},
+			"kubernetes_service",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToTerraformResourceType(tt.args.obj); got != tt.want {
+				t.Errorf("ToTerraformResourceType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
