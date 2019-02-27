@@ -132,35 +132,18 @@ func TestWriteObject(t *testing.T) {
 			f := hclwrite.NewEmptyFile()
 			WriteObject(obj, f.Body())
 
-			// FIXME: flaky test due to ordering of attributes
-			// hclOut := string(f.Bytes())
-			// assert.Equal(t, tt.args.hcl, hclOut, "HCL should be equal")
+			expectedConfig := parseResourceHCL(t, []byte(tt.args.hcl))
+			actualConfig := parseResourceHCL(t, f.Bytes())
+			assert.Equal(t, expectedConfig, actualConfig, "resource config should be equal")
 
-			assert.True(t, validateTerraformConfig(t, tt.args.resourceType, f.Bytes()), "HCL should pass provider validation")
+			assert.True(t, validateTerraformConfig(t, tt.args.resourceType, actualConfig), "HCL should pass provider validation")
 		})
 	}
 }
 
-func validateTerraformConfig(t *testing.T, resourceType string, hcl []byte) bool {
-	// write HCL to temp location where Terraform can load it
-	tmpDir, err := ioutil.TempDir("", "ky2tf")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.RemoveAll(tmpDir)
-	// t.Logf("tmpdir = %s", tmpDir)
-
-	// Write the file
-	ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
-
-	// Invoke terraform to load config
-	cfg, err := config.LoadDir(tmpDir)
-	if err != nil {
-		t.Error(err)
-	}
-
+func validateTerraformConfig(t *testing.T, resourceType string, cfg *config.RawConfig) bool {
 	// extract our resources rawConfig
-	rsrcConfig := terraform.NewResourceConfig(cfg.Resources[0].RawConfig)
+	rsrcConfig := terraform.NewResourceConfig(cfg)
 
 	// validate against the Kubernetes provider
 	prov := kubernetes.Provider().(*schema.Provider)
@@ -175,8 +158,28 @@ func validateTerraformConfig(t *testing.T, resourceType string, hcl []byte) bool
 		return false
 	}
 
-	os.RemoveAll(tmpDir)
 	return true
+}
+
+func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
+	// write HCL to temp location where Terraform can load it
+	tmpDir, err := ioutil.TempDir("", "ky2tf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Write the file
+	ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
+
+	// Invoke terraform to load config
+	cfg, err := config.LoadDir(tmpDir)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// extract our resources rawConfig
+	return cfg.Resources[0].RawConfig
 }
 
 func mustParseTestYAML(s string) runtime.Object {
