@@ -175,11 +175,14 @@ var noOpCloser = func() {}
 
 func setupOutput() (io.Writer, func()) {
 	if output != "" && output != "-" {
-		if _, err := os.Stat(output); os.IsExist(err) {
+		// writing to a file
+
+		if _, err := os.Stat(output); err == nil {
+			// don't clobber
 			log.Fatal().Str("file", output).Msg("output file already exists")
 		}
 
-		f, err := os.OpenFile(output, os.O_RDWR|os.O_CREATE, 0755)
+		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			log.Fatal().Err(err)
 		}
