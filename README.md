@@ -4,6 +4,8 @@ This tool converts Kubernetes API Objects (in YAML format) into HashiCorp's Terr
 
 The converted `.tf` files are suitable for use with the [Terraform Kubernetes Provider](https://www.terraform.io/docs/providers/kubernetes/index.html)
 
+## Installation
+
 ## Example Usage
 
 **Convert a single YAML file and write generated Terraform config to Stdout**
@@ -12,7 +14,7 @@ The converted `.tf` files are suitable for use with the [Terraform Kubernetes Pr
 $ k2tf -f test-fixtures/service.yaml
 ```
 
-**Convert a single YAML file and write to `.tf` file**
+**Convert a single YAML file and write output to file**
 
 ```
 $ k2tf -f test-fixtures/service.yaml -o service.tf
@@ -24,7 +26,7 @@ $ k2tf -f test-fixtures/service.yaml -o service.tf
 $ k2tf -f test-fixtures/
 ```
 
-**Read & Convert Kubernetes objects directly from a cluster**
+**Read & convert Kubernetes objects directly from a cluster**
 
 ```
 $ kubectl get deployments -o yaml | ./k2tf -o deployments.tf
