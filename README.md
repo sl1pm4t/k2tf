@@ -6,6 +6,14 @@ The converted `.tf` files are suitable for use with the [Terraform Kubernetes Pr
 
 ## Installation
 
+If you have a go build environment:
+
+```
+go get -v github.com/sl1pm4t/k2tf
+```
+
+Download Binary from GitHub [releases](https://github.com/sl1pm4t/k2tf/releases/latest) page:
+
 ## Example Usage
 
 **Convert a single YAML file and write generated Terraform config to Stdout**
