@@ -102,9 +102,10 @@ func extractProtobufName(field *reflect.StructField) string {
 
 // ToTerraformResourceType converts a Kubernetes API Object Type name to the
 // equivalent `terraform-provider-kubernetes` schema name.
-func ToTerraformResourceType(v reflect.Value) string {
-	ty := reflect.TypeOf(v.Interface())
-	return "kubernetes_" + normalizeTerraformName(ty.Name(), true)
+func ToTerraformResourceType(obj runtime.Object) string {
+	tmeta := typeMeta(obj)
+
+	return "kubernetes_" + normalizeTerraformName(tmeta.Kind, false)
 }
 
 // ToTerraformResourceName extract the Kubernetes API Objects' name from the
@@ -137,4 +138,16 @@ func objectMeta(obj runtime.Object) metav1.ObjectMeta {
 	metaF := v.FieldByName("ObjectMeta")
 
 	return metaF.Interface().(metav1.ObjectMeta)
+}
+
+func typeMeta(obj runtime.Object) metav1.TypeMeta {
+	v := reflect.ValueOf(obj)
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	metaF := v.FieldByName("TypeMeta")
+
+	return metaF.Interface().(metav1.TypeMeta)
 }

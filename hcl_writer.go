@@ -21,17 +21,19 @@ func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
 	return
 }
 
-// ObjectWalker implements reflectwalk.Walker interface
-// It used to "walk" the Kubernetes API Objects structure and generate
+// ObjectWalker implements reflectwalk.Walker interfaces
+// It's used to "walk" the Kubernetes API Objects structure and generate
 // an HCL document based on the values defined.
 type ObjectWalker struct {
 	// The Kubernetes API Object to be walked
 	RuntimeObject runtime.Object
 
 	// Terraform resource type (e.g. kubernetes_pod)
-	ResourceType string
+	resourceType string
+	// Terraform resource name (adapted from ObjectMeta name attribute)
+	resourceName string
 
-	// debug logging helper
+	// debug logging helpers
 	depth  int
 	indent string
 
@@ -214,13 +216,9 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 	if w.isTopLevel {
 		// we need to create the top level HCL block
 		// e.g. resource "kubernetes_pod" "name" {
+		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType(), w.ResourceName()})
+		w.openBlk(w.ResourceType(), topLevelBlock)
 		w.isTopLevel = false
-		w.ResourceType = ToTerraformResourceType(v)
-		resName := ToTerraformResourceName(w.RuntimeObject)
-
-		// create the HCL block
-		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType, resName})
-		w.openBlk(w.ResourceType, topLevelBlock)
 
 	} else {
 		// this struct is a sub-block, create a new HCL block and add to parent
@@ -482,4 +480,22 @@ func (w *ObjectWalker) debug(s string) {
 
 func (w *ObjectWalker) debugf(format string, a ...interface{}) {
 	w.debug(fmt.Sprintf(format, a...))
+}
+
+// ResourceName returns the Terraform Resource name for the Kubernetes Object
+func (w *ObjectWalker) ResourceName() string {
+	if w.resourceName == "" {
+		w.resourceName = ToTerraformResourceName(w.RuntimeObject)
+	}
+
+	return w.resourceName
+}
+
+// ResourceType returns the Terraform Resource type for the Kubernetes Object
+func (w *ObjectWalker) ResourceType() string {
+	if w.resourceType == "" {
+		w.resourceType = ToTerraformResourceType(w.RuntimeObject)
+	}
+
+	return w.resourceType
 }
