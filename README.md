@@ -8,16 +8,49 @@ The converted `.tf` files are suitable for use with the [Terraform Kubernetes Pr
 
 **Convert a single YAML file and write generated Terraform config to Stdout**
 
-`k2tf -f test-fixtures/service.yaml`
+```
+$ k2tf -f test-fixtures/service.yaml
+```
 
 **Convert a single YAML file and write to `.tf` file**
 
-`k2tf -f test-fixtures/service.yaml -o service.tf`
+```
+$ k2tf -f test-fixtures/service.yaml -o service.tf
+```
 
 **Convert a directory of Kubernetes YAML files**
 
-`k2tf -f test-fixtures/`
+```
+$ k2tf -f test-fixtures/
+```
 
 **Read & Convert Kubernetes objects directly from a cluster**
 
-`kubectl get deployments -o yaml | ./k2tf -o deployments.tf`
+```
+$ kubectl get deployments -o yaml | ./k2tf -o deployments.tf
+```
+
+## Building
+
+> **NOTE** Requires a working Golang build environment.
+
+This project uses Golang modules for dependency management, so it can be cloned outside of the `$GOPATH`.
+
+**Clone the repository**
+
+```
+$ git clone https://github.com/sl1pm4t/k2tf.git
+```
+
+**Build**
+
+```
+$ cd k2tf
+$ make build
+```
+
+**Run Tests**
+
+```
+$ make test
+```
