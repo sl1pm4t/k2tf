@@ -4,6 +4,8 @@ This tool converts Kubernetes API Objects (in YAML format) into HashiCorp's Terr
 
 The converted `.tf` files are suitable for use with the [Terraform Kubernetes Provider](https://www.terraform.io/docs/providers/kubernetes/index.html)
 
+[![asciicast](https://asciinema.org/a/5LzAc7Eha7w7dwrktAxcMdpIc.svg)](https://asciinema.org/a/5LzAc7Eha7w7dwrktAxcMdpIc)
+
 ## Installation
 
 If you have a go build environment:
