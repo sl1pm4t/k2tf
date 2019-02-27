@@ -21,8 +21,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// Build time variables
 var (
-	Version string = "0.1.0"
+	Version string = "0.1.x"
 	Build   string = ""
 )
 
@@ -32,6 +33,7 @@ var (
 	input              string
 	output             string
 	includeUnsupported bool
+	noColor            bool
 )
 
 func init() {
@@ -41,10 +43,15 @@ func init() {
 	flag.StringVarP(&output, "output", "o", "-", `file or directory where Terraform config will be written`)
 	flag.BoolVarP(&includeUnsupported, "include-unsupported", "I", false, `set to true to include unsupported Attributes / Blocks in the generated TF config`)
 
-	// Setup Logging
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	log.Info().Str("version", Version).Msg("k2tf")
 	flag.Parse()
+
+	// Setup Console Output
+	output := zerolog.ConsoleWriter{Out: os.Stderr}
+	output.FormatLevel = formatLevel(noColor)
+	output.FormatMessage = func(i interface{}) string {
+		return fmt.Sprintf("| %-60s ", i)
+	}
+	log.Logger = log.Output(output)
 
 	// Default level for this example is info, unless debug flag is present
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -54,6 +61,7 @@ func init() {
 }
 
 func main() {
+	log.Debug().Str("version", Version).Msg("starting k2tf")
 	objs := readInput()
 
 	log.Debug().Int("count", len(objs)).Msg("read objects from input")
@@ -201,3 +209,52 @@ func setupOutput() (io.Writer, func()) {
 	log.Debug().Msg("outputting HCL to Stdout")
 	return os.Stdout, noOpCloser
 }
+
+func formatLevel(noColor bool) zerolog.Formatter {
+	return func(i interface{}) string {
+		var l string
+		if ll, ok := i.(string); ok {
+			switch ll {
+			case "debug":
+				l = colorize("Debug", colorYellow, noColor)
+			case "info":
+				l = colorize("Info", colorGreen, noColor)
+			case "warn":
+				l = colorize("Warn", colorRed, noColor)
+			case "error":
+				l = colorize(colorize("Error", colorRed, noColor), colorBold, noColor)
+			case "fatal":
+				l = colorize(colorize("Fatal", colorRed, noColor), colorBold, noColor)
+			case "panic":
+				l = colorize(colorize("Panic", colorRed, noColor), colorBold, noColor)
+			default:
+				l = colorize("???", colorBold, noColor)
+			}
+		} else {
+			l = strings.ToUpper(fmt.Sprintf("%s", i))[0:3]
+		}
+		return l
+	}
+}
+
+// colorize returns the string s wrapped in ANSI code c, unless disabled is true.
+func colorize(s interface{}, c int, disabled bool) string {
+	if disabled {
+		return fmt.Sprintf("%s", s)
+	}
+	return fmt.Sprintf("\x1b[%dm%v\x1b[0m", c, s)
+}
+
+const (
+	colorBlack = iota + 30
+	colorRed
+	colorGreen
+	colorYellow
+	colorBlue
+	colorMagenta
+	colorCyan
+	colorWhite
+
+	colorBold     = 1
+	colorDarkGray = 90
+)
