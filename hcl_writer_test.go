@@ -20,6 +20,7 @@ import (
 var (
 	configMapYAML             string
 	basicDeploymentYAML       string
+	deploymentYAML            string
 	deployment2ContainersYAML string
 	podNodeExporterYAML       string
 	replicationControllerYAML string
@@ -32,6 +33,7 @@ var (
 func init() {
 	configMapYAML = loadTestFile("configMap.yaml")
 	basicDeploymentYAML = loadTestFile("basicDeployment.yaml")
+	deploymentYAML = loadTestFile("deployment.yaml")
 	deployment2ContainersYAML = loadTestFile("deployment2Containers.yaml")
 	podNodeExporterYAML = loadTestFile("podNodeExporter.yaml")
 	replicationControllerYAML = loadTestFile("replicationController.yml")
@@ -76,6 +78,14 @@ func TestWriteObject(t *testing.T) {
 				configMapYAML,
 				configMapHCL,
 				"kubernetes_config_map",
+			},
+		},
+		{
+			"Deployment",
+			args{
+				deploymentYAML,
+				deploymentHCL,
+				"kubernetes_deployment",
 			},
 		},
 		{
@@ -262,6 +272,150 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "baz_app" {
         }
       }
     }
+  }
+}
+`
+
+const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
+  metadata {
+    name      = "backend-api"
+    namespace = "default"
+    labels {
+      app = "backend-api"
+    }
+  }
+  spec {
+    replicas = 4
+    selector {
+      match_labels {
+        app = "backend-api"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          app = "backend-api"
+        }
+        annotations {
+          "prometheus.io/port"   = "8080"
+          "prometheus.io/scheme" = "http"
+          "prometheus.io/scrape" = "true"
+        }
+      }
+      spec {
+        volume {
+          name = "backend-api-config"
+          config_map {
+            name = "backend-api"
+            items {
+              key  = "backend-api.yml"
+              path = "backend-api.yml"
+            }
+            default_mode = 420
+          }
+        }
+        volume {
+          name = "nginx-ssl"
+          secret {
+            secret_name  = "nginx-ssl"
+            default_mode = 420
+          }
+        }
+        container {
+          name  = "esp"
+          image = "gcr.io/endpoints-release/endpoints-runtime:1"
+          args  = ["--ssl_port", "443", "--backend", "127.0.0.1:8080", "--service", "backend-api.endpoints.project.cloud.goog", "--version", "2018-11-14r0"]
+          port {
+            container_port = 443
+            protocol       = "TCP"
+          }
+          volume_mount {
+            name       = "nginx-ssl"
+            read_only  = true
+            mount_path = "/etc/nginx/ssl"
+          }
+          liveness_probe {
+            initial_delay_seconds = 5
+            timeout_seconds       = 1
+            period_seconds        = 10
+            success_threshold     = 1
+            failure_threshold     = 3
+            tcp_socket {
+              port = "443"
+            }
+          }
+          readiness_probe {
+            initial_delay_seconds = 5
+            timeout_seconds       = 1
+            period_seconds        = 10
+            success_threshold     = 1
+            failure_threshold     = 3
+            tcp_socket {
+              port = "443"
+            }
+          }
+          termination_message_path = "/dev/termination-log"
+          image_pull_policy        = "IfNotPresent"
+        }
+        container {
+          name    = "api"
+          image   = "gcr.io/project/backend-api:0.3.15"
+          command = ["/root/backend-api", "--config", "/backend-api-config/backend-api.yml", "--port", "8080"]
+          port {
+            container_port = 8080
+            protocol       = "TCP"
+          }
+          env {
+            name  = "CONF_MD5"
+            value = "bedba4b80a982b3116dfd56366de3c2d"
+          }
+          resources {
+            limits {
+              cpu    = "2"
+              memory = "8Gi"
+            }
+            requests {
+              cpu    = "300m"
+              memory = "2Gi"
+            }
+          }
+          volume_mount {
+            name       = "backend-api-config"
+            mount_path = "/backend-api-config"
+          }
+          liveness_probe {
+            initial_delay_seconds = 5
+            timeout_seconds       = 1
+            period_seconds        = 10
+            success_threshold     = 1
+            failure_threshold     = 3
+            tcp_socket {
+              port = "8080"
+            }
+          }
+          readiness_probe {
+            initial_delay_seconds = 5
+            timeout_seconds       = 1
+            period_seconds        = 10
+            success_threshold     = 1
+            failure_threshold     = 3
+            tcp_socket {
+              port = "8080"
+            }
+          }
+          termination_message_path = "/dev/termination-log"
+          image_pull_policy        = "Always"
+        }
+        restart_policy                   = "Always"
+        termination_grace_period_seconds = 30
+        dns_policy                       = "ClusterFirst"
+      }
+    }
+    strategy {
+      type = "RollingUpdate"
+    }
+    revision_history_limit    = 10
+    progress_deadline_seconds = 600
   }
 }
 `
