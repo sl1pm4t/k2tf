@@ -335,24 +335,24 @@ const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
             mount_path = "/etc/nginx/ssl"
           }
           liveness_probe {
+            tcp_socket {
+              port = "443"
+            }
             initial_delay_seconds = 5
             timeout_seconds       = 1
             period_seconds        = 10
             success_threshold     = 1
             failure_threshold     = 3
-            tcp_socket {
-              port = "443"
-            }
           }
           readiness_probe {
+            tcp_socket {
+              port = "443"
+            }
             initial_delay_seconds = 5
             timeout_seconds       = 1
             period_seconds        = 10
             success_threshold     = 1
             failure_threshold     = 3
-            tcp_socket {
-              port = "443"
-            }
           }
           termination_message_path = "/dev/termination-log"
           image_pull_policy        = "IfNotPresent"
@@ -360,7 +360,7 @@ const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
         container {
           name    = "api"
           image   = "gcr.io/project/backend-api:0.3.15"
-          command = ["/root/backend-api", "--config", "/backend-api-config/backend-api.yml", "--port", "8080"]
+          command = ["/root/backend-api", "--config", "/backend-api-config/backend-api.yml", "--port", "8080", "--nats-addr=nats-streaming:4222"]
           port {
             container_port = 8080
             protocol       = "TCP"
@@ -384,24 +384,24 @@ const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
             mount_path = "/backend-api-config"
           }
           liveness_probe {
+            tcp_socket {
+              port = "8080"
+            }
             initial_delay_seconds = 5
             timeout_seconds       = 1
             period_seconds        = 10
             success_threshold     = 1
             failure_threshold     = 3
-            tcp_socket {
-              port = "8080"
-            }
           }
           readiness_probe {
+            tcp_socket {
+              port = "8080"
+            }
             initial_delay_seconds = 5
             timeout_seconds       = 1
             period_seconds        = 10
             success_threshold     = 1
             failure_threshold     = 3
-            tcp_socket {
-              port = "8080"
-            }
           }
           termination_message_path = "/dev/termination-log"
           image_pull_policy        = "Always"
@@ -413,6 +413,10 @@ const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
     }
     strategy {
       type = "RollingUpdate"
+      rolling_update {
+        max_unavailable = "25%"
+        max_surge       = "25%"
+      }
     }
     revision_history_limit    = 10
     progress_deadline_seconds = 600

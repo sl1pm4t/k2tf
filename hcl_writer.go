@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/rs/zerolog"
 
@@ -166,10 +167,10 @@ func (w *ObjectWalker) sliceElemType() reflect.Type {
 func (w *ObjectWalker) openBlk(name, fieldName string, hcl *hclwrite.Block) *hclBlock {
 	w.debugf("opening hclBlock for field: %s", name)
 	blk := &hclBlock{
-		name:   name,
+		name:      name,
 		fieldName: fieldName,
-		parent: w.currentBlock,
-		hcl:    hcl,
+		parent:    w.currentBlock,
+		hcl:       hcl,
 	}
 
 	w.currentBlock = blk
@@ -276,8 +277,17 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// Skip some Kubernetes complex types that should be treated as Primitives.
 		// Do this after opening the Block above because reflectwalk will
 		// still call Exit for this struct and we need the calls to closeBlk() to marry up
+		// TODO: figure out a uniform way to handle these cases
 		switch v.Interface().(type) {
 		case resource.Quantity:
+			return reflectwalk.SkipEntry
+		case intstr.IntOrString:
+			ios := v.Interface().(intstr.IntOrString)
+			if ios.IntVal > 0 || ios.StrVal != "" {
+				blk.hasValue = false
+				blk.parent.SetAttributeValue(blockName, w.convertCtyValue(v.Interface()))
+				blk.parent.hasValue = true
+			}
 			return reflectwalk.SkipEntry
 		}
 
@@ -418,6 +428,7 @@ func (w *ObjectWalker) SliceElem(i int, v reflect.Value) error {
 	return nil
 }
 
+// convertCtyValue takes an interface and converts to HCL types
 func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 	switch val.(type) {
 	case string:
@@ -446,6 +457,11 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 		qty := val.(resource.Quantity)
 		qtyPtr := &qty
 		return cty.StringVal(qtyPtr.String())
+
+	case intstr.IntOrString:
+		ios := val.(intstr.IntOrString)
+		iosPtr := &ios
+		return cty.StringVal(iosPtr.String())
 
 	default:
 		if s, ok := val.(fmt.Stringer); ok {
@@ -496,7 +512,7 @@ func (w *ObjectWalker) log(s string, e *zerolog.Event) {
 	if w.currentSlice() != nil {
 		e.Str("slice", w.currentSlice().Name)
 	}
-	e.Msg(s)
+			e.Msg(s)
 }
 
 func (w *ObjectWalker) info(s string) {

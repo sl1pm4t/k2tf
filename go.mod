@@ -1,7 +1,6 @@
 module github.com/sl1pm4t/k2tf
 
 require (
-	github.com/ahmetb/govvv v0.2.0 // indirect
 	github.com/hashicorp/go-getter v1.0.3 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-uuid v1.0.1 // indirect
