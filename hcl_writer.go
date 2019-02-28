@@ -34,7 +34,6 @@ type ObjectWalker struct {
 	resourceName string
 
 	// debug logging helpers
-	depth  int
 	indent string
 
 	// top level HCL
@@ -47,6 +46,7 @@ type ObjectWalker struct {
 	currentField *reflect.StructField
 
 	// slices of structs
+	slices           []*reflect.StructField
 	sliceField       *reflect.StructField
 	sliceElemTypes   []reflect.Type
 	ignoreSliceElems bool
@@ -71,6 +71,21 @@ func (w *ObjectWalker) setCurrentField(f *reflect.StructField) {
 	}
 }
 
+func (w *ObjectWalker) setCurrentSlice(f *reflect.StructField) {
+	if f != nil {
+		w.debugf("setting setCurrentSlice to %s", f.Name)
+		w.sliceField = f
+	}
+}
+
+func (w *ObjectWalker) currentSlice() *reflect.StructField {
+	if len(w.slices) > 0 {
+		return w.slices[len(w.slices)-1]
+	}
+
+	return nil
+}
+
 func (w *ObjectWalker) fieldPop() *reflect.StructField {
 	result := w.fields[len(w.fields)-1]
 	w.fields = w.fields[:len(w.fields)-1]
@@ -84,6 +99,35 @@ func (w *ObjectWalker) fieldPush(v *reflect.StructField) {
 	w.fields = append(w.fields, v)
 	w.debugf("fieldPush %s", v.Name)
 	w.setCurrentField(v)
+}
+
+func (w *ObjectWalker) slicePop() *reflect.StructField {
+	result := w.slices[len(w.slices)-1]
+	w.slices = w.slices[:len(w.slices)-1]
+
+	w.debugf("slicePop %s", result.Name)
+	w.setCurrentSlice(result)
+	return result
+}
+
+func (w *ObjectWalker) slicePush(v *reflect.StructField) {
+	w.slices = append(w.slices, v)
+	w.debugf("slicePush %s", v.Name)
+	w.setCurrentSlice(v)
+}
+
+func (w *ObjectWalker) sliceType() reflect.Type {
+	var result reflect.Type
+	currSlice := w.currentSlice()
+	if currSlice != nil {
+		result = currSlice.Type
+		w.debugf("sliceType %s", result.Name())
+	} else {
+		result = reflect.TypeOf(nil)
+		w.debug("sliceType nil")
+	}
+
+	return result
 }
 
 func (w *ObjectWalker) sliceElemTypePush(ty reflect.Type) {
@@ -116,10 +160,11 @@ func (w *ObjectWalker) sliceElemType() reflect.Type {
 // openBlk opens a new HCL resource block or sub-block
 // It creates a hclBlock object so we can track hierarchy of blocks
 // within the resource tree
-func (w *ObjectWalker) openBlk(name string, hcl *hclwrite.Block) *hclBlock {
+func (w *ObjectWalker) openBlk(name, fieldName string, hcl *hclwrite.Block) *hclBlock {
 	w.debugf("opening hclBlock for field: %s", name)
 	blk := &hclBlock{
 		name:   name,
+		fieldName: fieldName,
 		parent: w.currentBlock,
 		hcl:    hcl,
 	}
@@ -130,7 +175,7 @@ func (w *ObjectWalker) openBlk(name string, hcl *hclwrite.Block) *hclBlock {
 
 // closeBlk writes the generated HCL to the hclwriter
 func (w *ObjectWalker) closeBlk() *hclBlock {
-	w.debugf("closing hclBlock: %s | [%v]", w.currentBlock.name, w.currentBlock)
+	w.debugf("closing hclBlock: %s", w.currentBlock.name)
 
 	parent := w.currentBlock.parent
 	current := w.currentBlock
@@ -161,40 +206,26 @@ func (w *ObjectWalker) closeBlk() *hclBlock {
 
 // Enter is called by reflectwalk.Walk each time we enter a level
 func (w *ObjectWalker) Enter(l reflectwalk.Location) error {
-	w.depth++
 	w.debug(fmt.Sprint("entering ", l))
-
-	switch l {
-	case reflectwalk.Slice:
-		w.increaseIndent()
-
-	case reflectwalk.Struct:
-		fallthrough
-	case reflectwalk.Map:
-		w.increaseIndent()
-
-	}
 
 	return nil
 }
 
 // Exit is called by reflectwalk each time it exits from a reflectwalk.Location
 func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
-	w.depth--
 	switch l {
 	case reflectwalk.Slice:
 		if !w.ignoreSliceElems {
 			w.sliceElemTypePop()
 		}
 		w.ignoreSliceElems = false
-		w.decreaseIndent()
+		w.slicePop()
 
 	case reflectwalk.Struct:
 		fallthrough
 
 	case reflectwalk.Map:
 		w.closeBlk()
-		w.decreaseIndent()
 
 	case reflectwalk.StructField:
 		w.fieldPop()
@@ -208,6 +239,7 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 //
 func (w *ObjectWalker) Struct(v reflect.Value) error {
 	if !v.CanInterface() {
+		w.debugf("skipping Struct [field: %s, type: %s] - CanInterface() = false", w.currentField.Name, v.Type())
 		return nil
 	}
 
@@ -217,23 +249,23 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// we need to create the top level HCL block
 		// e.g. resource "kubernetes_pod" "name" {
 		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType(), w.ResourceName()})
-		w.openBlk(w.ResourceType(), topLevelBlock)
+		w.openBlk(w.ResourceType(), typeMeta(w.RuntimeObject).Kind, topLevelBlock)
 		w.isTopLevel = false
 
 	} else {
 		// this struct is a sub-block, create a new HCL block and add to parent
 		field := w.currentField
 
-		if w.sliceElemType() == ty {
+		if w.sliceElemType() == ty || w.sliceType() == ty {
 			// when iterating over a slice of complex types, the block name is based on the
 			// Slices StructField data instead of the Slice element.
 			w.debug("using sliceField instead of currentField")
-			field = w.sliceField
+			field = w.currentSlice()
 		}
 
 		blockName := ToTerraformSubBlockName(field)
 		w.debugf("creating blk [%s] for field [%s]", blockName, field.Name)
-		blk := w.openBlk(blockName, hclwrite.NewBlock(blockName, nil))
+		blk := w.openBlk(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
 
 		// Skip some Kubernetes complex types that should be treated as Primitives.
 		// Do this after opening the Block above because reflectwalk will
@@ -280,7 +312,7 @@ func (w *ObjectWalker) StructField(field reflect.StructField, v reflect.Value) e
 // If it's not a zero value, add an Attribute to the current HCL Block.
 func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
-		w.debug(fmt.Sprintf("%s = %v (%T)[%s]", w.currentField.Name, v.Interface(), v.Interface(), w.currentField.Tag))
+		w.debug(fmt.Sprintf("%s = %v (%T)", w.currentField.Name, v.Interface(), v.Interface()))
 
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
@@ -297,7 +329,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := ToTerraformSubBlockName(w.currentField)
 	hcl := hclwrite.NewBlock(blockName, nil)
-	w.openBlk(blockName, hcl)
+	w.openBlk(blockName, w.currentField.Name, hcl)
 
 	return nil
 }
@@ -319,6 +351,7 @@ func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 
 // Slice implements reflectwalk.SliceWalker interface
 func (w *ObjectWalker) Slice(v reflect.Value) error {
+	w.slicePush(w.currentField)
 	if !v.IsValid() {
 		w.debug(fmt.Sprint("skipping invalid slice "))
 		w.ignoreSliceElems = true
@@ -336,15 +369,14 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 			vt = v.Index(0).Type()
 		}
 
-		w.sliceElemTypePush(vt)
-
 		switch {
 		case vt.Kind() == reflect.Struct:
 			fallthrough
 		case vt.Kind() == reflect.Ptr:
-			w.debug("slice of Pointers / Structs")
-			w.sliceField = w.currentField
-			// walk
+			w.debugf("slice of Pointers / Structs, setting sliceField")
+			// w.sliceField = w.currentField
+			w.sliceElemTypePush(vt)
+			// walk elements
 
 		default:
 			valTy, err := gocty.ImpliedType(v.Interface())
@@ -377,16 +409,8 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 
 // SliceElem implements reflectwalk.SliceWalker interface
 func (w *ObjectWalker) SliceElem(i int, v reflect.Value) error {
-	w.debugf("Elem: %v", v.Interface())
+	w.debugf("Elem %d: %T", i, v.Interface())
 	return nil
-}
-
-func (w *ObjectWalker) increaseIndent() {
-	w.indent = w.indent + "  "
-}
-
-func (w *ObjectWalker) decreaseIndent() {
-	w.indent = w.indent[:len(w.indent)-2]
 }
 
 func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {

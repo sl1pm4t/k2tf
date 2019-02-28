@@ -14,6 +14,9 @@ type hclBlock struct {
 	//
 	name string
 
+	//
+	fieldName string
+
 	// The parent hclBlock to this hclBlock
 	parent *hclBlock
 
@@ -82,4 +85,16 @@ func (b *hclBlock) FullSchemaName() string {
 func (b *hclBlock) isSupportedAttribute(name string) bool {
 	supported, _ := SchemaSupportsAttribute(name)
 	return supported
+}
+
+func (b *hclBlock) FullFieldName() string {
+	parentName := ""
+	if b.parent != nil {
+		parentName = b.parent.FullFieldName()
+	}
+
+	if b.inlined {
+		return parentName
+	}
+	return strings.TrimLeft(parentName+"."+b.fieldName, ".")
 }

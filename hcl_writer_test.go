@@ -20,6 +20,7 @@ import (
 var (
 	configMapYAML             string
 	basicDeploymentYAML       string
+	deployment2ContainersYAML string
 	podNodeExporterYAML       string
 	replicationControllerYAML string
 	roleYAML                  string
@@ -31,6 +32,7 @@ var (
 func init() {
 	configMapYAML = loadTestFile("configMap.yaml")
 	basicDeploymentYAML = loadTestFile("basicDeployment.yaml")
+	deployment2ContainersYAML = loadTestFile("deployment2Containers.yaml")
 	podNodeExporterYAML = loadTestFile("podNodeExporter.yaml")
 	replicationControllerYAML = loadTestFile("replicationController.yml")
 	roleYAML = loadTestFile("role.yaml")
@@ -74,6 +76,14 @@ func TestWriteObject(t *testing.T) {
 				configMapYAML,
 				configMapHCL,
 				"kubernetes_config_map",
+			},
+		},
+		{
+			"Deployment_2Containers",
+			args{
+				deployment2ContainersYAML,
+				deployment2ContainersHCL,
+				"kubernetes_deployment",
 			},
 		},
 		{
