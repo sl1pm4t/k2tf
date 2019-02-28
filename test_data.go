@@ -65,6 +65,43 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "baz_app" {
 }
 `
 
+const deployment2ContainersHCL = `resource "kubernetes_deployment" "backend_api" {
+  metadata {
+    name = "backend-api"
+  }
+  spec {
+    selector {
+      match_labels {
+        app = "backend-api"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          app = "backend-api"
+        }
+      }
+      spec {
+        container {
+          name  = "esp"
+          image = "gcr.io/container1/image:latest"
+          args  = ["--ssl_port", "443"]
+          port {
+            container_port = 443
+            protocol       = "TCP"
+          }
+        }
+        container {
+          name    = "api"
+          image   = "gcr.io/container2/image:latest"
+          command = ["/root/backend-api"]
+        }
+      }
+    }
+  }
+}
+`
+
 const podNodeExporterHCL = `resource "kubernetes_pod" "node_exporter_7fth_7" {
   metadata {
     name          = "node-exporter-7fth7"

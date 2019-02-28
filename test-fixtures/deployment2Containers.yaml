@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: backend-api
+spec:
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+        - args:
+            - --ssl_port
+            - "443"
+          image: gcr.io/container1/image:latest
+          name: esp
+          ports:
+            - containerPort: 443
+              protocol: TCP
+        - command:
+            - /root/backend-api
+          image: gcr.io/container2/image:latest
+          name: api
