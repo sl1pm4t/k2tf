@@ -23,8 +23,9 @@ import (
 
 // Build time variables
 var (
-	Version string = "0.1.x"
-	Build   string = ""
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 // Command line flags
@@ -61,7 +62,11 @@ func init() {
 }
 
 func main() {
-	log.Debug().Str("version", Version).Msg("starting k2tf")
+	log.Debug().
+		Str("version", version).
+		Str("commit", commit).
+		Str("builddate", date).
+		Msg("starting k2tf")
 	objs := readInput()
 
 	log.Debug().Int("count", len(objs)).Msg("read objects from input")
