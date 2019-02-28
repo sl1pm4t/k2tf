@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
+
+	"github.com/rs/zerolog"
+
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/mitchellh/reflectwalk"
 	"github.com/rs/zerolog/log"
@@ -188,7 +191,10 @@ func (w *ObjectWalker) closeBlk() *hclBlock {
 	} else {
 		if !includeUnsupported && current.unsupported {
 			// don't append this block or child blocks
-			log.Warn().Str("attribute", current.FullSchemaName()).Msg("excluding attribute because it's unsupported in Terraform schema")
+			w.warn().
+				Str("attr", current.FullSchemaName()).
+				Str("field", current.FullFieldName()).
+				Msg("excluding attribute - not found in Terraform schema")
 
 		} else if current.hasValue {
 			// communicate back up the tree that we found a non-zero value
@@ -280,7 +286,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		var err error
 		supported, err := SchemaSupportsAttribute(blk.FullSchemaName())
 		if err != nil && err != attrNotFoundError {
-			log.Warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
+			w.warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
 		blk.unsupported = !supported
 	}
@@ -373,8 +379,7 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 		case vt.Kind() == reflect.Struct:
 			fallthrough
 		case vt.Kind() == reflect.Ptr:
-			w.debugf("slice of Pointers / Structs, setting sliceField")
-			// w.sliceField = w.currentField
+			w.debugf("slice of Pointers / Structs")
 			w.sliceElemTypePush(vt)
 			// walk elements
 
@@ -480,11 +485,22 @@ func ignoredField(name string) bool {
 	return ok
 }
 
+func (w *ObjectWalker) log(s string, e *zerolog.Event) {
+	e.
+		Str("type", w.ResourceType()).
+		Str("name", w.ResourceName())
+
+	if w.currentField != nil {
+		e.Str("field", w.currentField.Name)
+	}
+	if w.currentSlice() != nil {
+		e.Str("slice", w.currentSlice().Name)
+	}
+	e.Msg(s)
+}
+
 func (w *ObjectWalker) info(s string) {
-	log.Info().
-		Str("rtype", w.ResourceType).
-		Str("current", w.currentBlock.FullSchemaName()).
-		Msg(s)
+	w.log(s, log.Info())
 }
 
 func (w *ObjectWalker) infof(format string, a ...interface{}) {
@@ -492,18 +508,23 @@ func (w *ObjectWalker) infof(format string, a ...interface{}) {
 }
 
 func (w *ObjectWalker) debug(s string) {
-	e := log.Debug().
-		Str("rtype", w.ResourceType)
-
-	if w.currentBlock != nil {
-		e = e.Str("current", w.currentBlock.FullSchemaName())
-	}
-
-	e.Msg(s)
+	w.log(s, log.Debug())
 }
 
 func (w *ObjectWalker) debugf(format string, a ...interface{}) {
 	w.debug(fmt.Sprintf(format, a...))
+}
+
+func (w *ObjectWalker) warn() *zerolog.Event {
+	return w.decorateEvent(log.Warn())
+}
+
+func (w *ObjectWalker) decorateEvent(e *zerolog.Event) *zerolog.Event {
+	e.
+		Str("name", w.ResourceName()).
+		Str("type", w.ResourceType())
+
+	return e
 }
 
 // ResourceName returns the Terraform Resource name for the Kubernetes Object
