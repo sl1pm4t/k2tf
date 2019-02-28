@@ -1,0 +1,156 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: 2018-11-13T07:27:00Z
+  generation: 48
+  labels:
+    app: backend-api
+  name: backend-api
+  namespace: default
+  resourceVersion: "81661696"
+  selfLink: /apis/extensions/v1beta1/namespaces/default/deployments/backend-api
+  uid: 82ccf12f-e715-11e8-9d93-42010a80001b
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 4
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: backend-api
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "8080"
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: backend-api
+    spec:
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - --ssl_port
+            - "443"
+            - --backend
+            - 127.0.0.1:8080
+            - --service
+            - backend-api.endpoints.project.cloud.goog
+            - --version
+            - 2018-11-14r0
+          image: gcr.io/endpoints-release/endpoints-runtime:1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 443
+            timeoutSeconds: 1
+          name: esp
+          ports:
+            - containerPort: 443
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 443
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/nginx/ssl
+              name: nginx-ssl
+              readOnly: true
+        - command:
+            - /root/backend-api
+            - --config
+            - /backend-api-config/backend-api.yml
+            - --port
+            - "8080"
+            - --nats-addr=nats-streaming:4222
+          env:
+            - name: CONF_MD5
+              value: bedba4b80a982b3116dfd56366de3c2d
+          image: gcr.io/project/backend-api:0.3.15
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+          name: api
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "2"
+              memory: 8Gi
+            requests:
+              cpu: 300m
+              memory: 2Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /backend-api-config
+              name: backend-api-config
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: backend-api.yml
+                mode: 0
+                path: backend-api.yml
+            name: backend-api
+          name: backend-api-config
+        - name: nginx-ssl
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: nginx-ssl
+status:
+  availableReplicas: 4
+  conditions:
+    - lastTransitionTime: 2018-11-13T07:27:00Z
+      lastUpdateTime: 2018-12-10T15:47:16Z
+      message: ReplicaSet "backend-api-787b45d8fc" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    - lastTransitionTime: 2019-02-22T20:56:24Z
+      lastUpdateTime: 2019-02-22T20:56:24Z
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+  observedGeneration: 48
+  readyReplicas: 4
+  replicas: 4
+  updatedReplicas: 4
