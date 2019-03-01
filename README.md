@@ -8,13 +8,13 @@ The converted `.tf` files are suitable for use with the [Terraform Kubernetes Pr
 
 ## Installation
 
-If you have a go build environment:
+**Pre-built Binaries**
 
-```
-go get -v github.com/sl1pm4t/k2tf
-```
+Download Binary from GitHub [releases](https://github.com/sl1pm4t/k2tf/releases/latest) page.
 
-Download Binary from GitHub [releases](https://github.com/sl1pm4t/k2tf/releases/latest) page:
+**Build from source**
+
+_See below_
 
 ## Example Usage
 
