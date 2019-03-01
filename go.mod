@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
-	github.com/terraform-providers/terraform-provider-kubernetes v1.5.1
+	github.com/terraform-providers/terraform-provider-kubernetes v1.5.2
 	github.com/zclconf/go-cty v0.0.0-20190201220620-4ca19710f056
 	golang.org/x/crypto v0.0.0-20190208162236-193df9c0f06f // indirect
 	golang.org/x/net v0.0.0-20190206173232-65e2d4e15006 // indirect
