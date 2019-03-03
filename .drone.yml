@@ -14,7 +14,7 @@ steps:
 
   - name: release
     image: golang:1.11
-    commands: curl -sL https://git.io/goreleaser | bash
+    commands: "curl -sL https://git.io/goreleaser | bash"
     GITHUB_TOKEN:
       from_secret: github_token
     when:
