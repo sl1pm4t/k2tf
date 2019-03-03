@@ -1,6 +1,8 @@
 # k2tf - Kubernetes YAML to Terraform HCL converter
 
-This tool converts Kubernetes API Objects (in YAML format) into HashiCorp's Terraform configuration language.
+[![Build Status](https://cloud.drone.io/api/badges/sl1pm4t/k2tf/status.svg)](https://cloud.drone.io/sl1pm4t/k2tf)
+
+A tool for converting Kubernetes API Objects (in YAML format) into HashiCorp's Terraform configuration language.
 
 The converted `.tf` files are suitable for use with the [Terraform Kubernetes Provider](https://www.terraform.io/docs/providers/kubernetes/index.html)
 

@@ -1,0 +1,21 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: test
+    image: golang:1.11
+    commands:
+      - go test -v
+
+  - name: build
+    image: golang:1.11
+    commands:
+      - go build -v
+
+  - name: release
+    image: golang:1.11
+    commands: curl -sL https://git.io/goreleaser | bash
+    GITHUB_TOKEN:
+      from_secret: github_token
+    when:
+      event: tag
