@@ -5,6 +5,7 @@ steps:
   - name: test
     image: golang:1.11
     commands:
+      - "sed -e '/+incompatible /d' -i go.sum"
       - go test -v
 
   - name: build
