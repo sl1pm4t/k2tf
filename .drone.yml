@@ -22,7 +22,8 @@ steps:
     image: golang:1.11
     commands:
       - "curl -sL https://git.io/goreleaser | bash"
-    GITHUB_TOKEN:
-      from_secret: github_token
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
     when:
       event: tag
