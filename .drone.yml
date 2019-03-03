@@ -2,6 +2,11 @@ kind: pipeline
 name: default
 
 steps:
+  - name: fetch-tags
+    image: docker:git
+    commands:
+      - git fetch --tags
+
   - name: test
     image: golang:1.11
     commands:
