@@ -35,10 +35,12 @@ var (
 	output             string
 	includeUnsupported bool
 	noColor            bool
+	overwriteExisting            bool
 )
 
 func init() {
 	// init command line flags
+	flag.BoolVarP(&overwriteExisting, "overwrite-existing", "x", false, "allow overwriting existing output file(s)")
 	flag.BoolVarP(&debug, "debug", "d", false, "enable debug output")
 	flag.StringVarP(&input, "filepath", "f", "-", `file or directory that contains the YAML configuration to convert. Use "-" to read from stdin.`)
 	flag.StringVarP(&output, "output", "o", "-", `file or directory where Terraform config will be written`)
@@ -194,7 +196,7 @@ func setupOutput() (io.Writer, func()) {
 	if output != "" && output != "-" {
 		// writing to a file
 
-		if _, err := os.Stat(output); err == nil {
+		if _, err := os.Stat(output); err == nil && !overwriteExisting {
 			// don't clobber
 			log.Fatal().Str("file", output).Msg("output file already exists")
 		}
