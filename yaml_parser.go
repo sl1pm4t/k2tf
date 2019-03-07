@@ -33,7 +33,9 @@ func ParseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 			result = multierror.Append(result, wrapped)
 		}
 
-		objs = append(objs, obj)
+		if obj != nil {
+			objs = append(objs, obj)
+		}
 	}
 
 	return objs, result

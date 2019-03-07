@@ -67,6 +67,7 @@ func main() {
 		Str("commit", commit).
 		Str("builddate", date).
 		Msg("starting k2tf")
+
 	objs := readInput()
 
 	log.Debug().Int("count", len(objs)).Msg("read objects from input")
@@ -74,9 +75,12 @@ func main() {
 	w, closer := setupOutput()
 	defer closer()
 
-	for _, obj := range objs {
+	for i, obj := range objs {
 		f := hclwrite.NewEmptyFile()
-		WriteObject(obj, f.Body())
+		err := WriteObject(obj, f.Body())
+		if err != nil {
+			log.Error().Int("obj#", i).Err(err).Msg("error writing object")
+		}
 		fmt.Fprint(w, string(f.Bytes()))
 		fmt.Fprintln(w)
 	}

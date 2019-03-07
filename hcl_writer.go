@@ -18,11 +18,14 @@ import (
 )
 
 // WriteObject converts a Kubernetes runtime.Object to HCL
-func WriteObject(obj runtime.Object, dst *hclwrite.Body) {
-	w := NewObjectWalker(obj, dst)
+func WriteObject(obj runtime.Object, dst *hclwrite.Body) error {
+	w, err := NewObjectWalker(obj, dst)
+	if err != nil {
+		return err
+	}
 	reflectwalk.Walk(obj, w)
 
-	return
+	return nil
 }
 
 // ObjectWalker implements reflectwalk.Walker interfaces
@@ -58,14 +61,18 @@ type ObjectWalker struct {
 
 // NewObjectWalker returns a new ObjectWalker object
 // dst is the hclwrite.Body where HCL blocks will be appended.
-func NewObjectWalker(obj runtime.Object, dst *hclwrite.Body) *ObjectWalker {
+func NewObjectWalker(obj runtime.Object, dst *hclwrite.Body) (*ObjectWalker, error) {
+	if obj == nil {
+		return nil, fmt.Errorf("obj cannot be nil")
+	}
+
 	w := &ObjectWalker{
 		RuntimeObject: obj,
 		isTopLevel:    true,
 		dst:           dst,
 	}
 
-	return w
+	return w, nil
 }
 
 func (w *ObjectWalker) setCurrentField(f *reflect.StructField) {
