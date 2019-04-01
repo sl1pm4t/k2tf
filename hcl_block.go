@@ -83,7 +83,7 @@ func (b *hclBlock) FullSchemaName() string {
 }
 
 func (b *hclBlock) isSupportedAttribute(name string) bool {
-	supported, _ := SchemaSupportsAttribute(name)
+	supported, _ := IsAttributeSupported(name)
 	return supported
 }
 

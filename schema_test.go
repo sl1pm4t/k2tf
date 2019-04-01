@@ -57,13 +57,13 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := SchemaSupportsAttribute(tt.args.attrName)
+			got, err := IsAttributeSupported(tt.args.attrName)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SchemaSupportsAttribute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("IsAttributeSupported() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("SchemaSupportsAttribute() = %v, want %v", got, tt.want)
+				t.Errorf("IsAttributeSupported() = %v, want %v", got, tt.want)
 			}
 		})
 	}

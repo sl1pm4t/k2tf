@@ -22,11 +22,9 @@ func ResourceSchema(name string) *schema.Resource {
 	return nil
 }
 
-// SchemaSupportsAttribute scans the Terraform resource to determine if the named
-// attribute is supported.
-func SchemaSupportsAttribute(attrName string) (bool, error) {
-	// fmt.Printf("SchemaSupportsAttribute -> resName=%s, attrName=%s\n", resName, attrName)
-
+// IsAttributeSupported scans the Terraform resource to determine if the named
+// attribute is supported by the Kubernetes provider.
+func IsAttributeSupported(attrName string) (bool, error) {
 	attrParts := strings.Split(attrName, ".")
 	res := ResourceSchema(attrParts[0])
 	if res == nil {

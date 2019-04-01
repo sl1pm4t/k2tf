@@ -301,7 +301,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		blk.inlined = IsInlineStruct(field)
 
 		var err error
-		supported, err := SchemaSupportsAttribute(blk.FullSchemaName())
+		supported, err := IsAttributeSupported(blk.FullSchemaName())
 		if err != nil && err != attrNotFoundError {
 			w.warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
@@ -519,7 +519,7 @@ func (w *ObjectWalker) log(s string, e *zerolog.Event) {
 	if w.currentSlice() != nil {
 		e.Str("slice", w.currentSlice().Name)
 	}
-			e.Msg(s)
+	e.Msg(s)
 }
 
 func (w *ObjectWalker) info(s string) {
