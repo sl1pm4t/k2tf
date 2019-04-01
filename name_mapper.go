@@ -55,10 +55,20 @@ func ToTerraformSubBlockName(field *reflect.StructField) string {
 // normalizeTerraformName converts the given string to snake case
 // and optionally to singular form of the given word
 func normalizeTerraformName(s string, toSingular bool) string {
-	if toSingular {
-		s = inflection.Singular(s)
+	switch s {
+	case "DaemonSet":
+		return "daemonset"
+
+	case "updateStrategy":
+		return "strategy"
+
+	default:
+		if toSingular {
+			s = inflection.Singular(s)
+		}
+		s = strcase.ToSnake(s)
 	}
-	s = strcase.ToSnake(s)
+
 	return s
 }
 

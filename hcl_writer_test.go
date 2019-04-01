@@ -20,6 +20,7 @@ import (
 var (
 	configMapYAML             string
 	basicDeploymentYAML       string
+	daemonsetYAML             string
 	deploymentYAML            string
 	deployment2ContainersYAML string
 	podNodeExporterYAML       string
@@ -33,6 +34,7 @@ var (
 func init() {
 	configMapYAML = loadTestFile("configMap.yaml")
 	basicDeploymentYAML = loadTestFile("basicDeployment.yaml")
+	daemonsetYAML = loadTestFile("daemonset.yaml")
 	deploymentYAML = loadTestFile("deployment.yaml")
 	deployment2ContainersYAML = loadTestFile("deployment2Containers.yaml")
 	podNodeExporterYAML = loadTestFile("podNodeExporter.yaml")
@@ -78,6 +80,14 @@ func TestWriteObject(t *testing.T) {
 				configMapYAML,
 				configMapHCL,
 				"kubernetes_config_map",
+			},
+		},
+		{
+			"DaemonSet",
+			args{
+				daemonsetYAML,
+				daemonsetHCL,
+				"kubernetes_daemonset",
 			},
 		},
 		{
@@ -275,6 +285,46 @@ const basicDeploymentHCL = `resource "kubernetes_deployment" "baz_app" {
   }
 }
 `
+
+const daemonsetHCL = `resource "kubernetes_daemonset" "terraform_example" {
+  metadata {
+    name      = "terraform-example"
+    namespace = "something"
+    labels {
+      test = "MyExampleApp"
+    }
+  }
+  spec {
+    selector {
+      match_labels {
+        test = "MyExampleApp"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          test = "MyExampleApp"
+        }
+      }
+      spec {
+        container {
+          name  = "example"
+          image = "nginx:1.7.8"
+          resources {
+            limits {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests {
+              memory = "50Mi"
+              cpu    = "250m"
+            }
+          }
+        }
+      }
+    }
+  }
+}`
 
 const deploymentHCL = `resource "kubernetes_deployment" "backend_api" {
   metadata {

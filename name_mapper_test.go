@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -77,6 +77,16 @@ func TestToTerraformSubBlockName(t *testing.T) {
 				},
 			},
 			"match_labels",
+		},
+		{
+			"update_strategy",
+			args{
+				&reflect.StructField{
+					Name: "UpdateStrategy",
+					Tag:  `json:"updateStrategy,omitempty" protobuf:"bytes,1,rep,name=updateStrategy"`,
+				},
+			},
+			"strategy",
 		},
 		{
 			"volume_source",
@@ -161,6 +171,17 @@ func TestToTerraformResourceType(t *testing.T) {
 				},
 			},
 			"kubernetes_pod",
+		},
+		{
+			"DaemonSet",
+			args{
+				obj: &appsv1.DaemonSet{
+					TypeMeta: metav1.TypeMeta{
+						Kind: "DaemonSet",
+					},
+				},
+			},
+			"kubernetes_daemonset",
 		},
 		{
 			"Deployment",
