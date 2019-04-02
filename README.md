@@ -1,6 +1,8 @@
 # k2tf - Kubernetes YAML to Terraform HCL converter
 
 [![Build Status](https://cloud.drone.io/api/badges/sl1pm4t/k2tf/status.svg)](https://cloud.drone.io/sl1pm4t/k2tf)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sl1pm4t/k2tf?)](https://goreportcard.com/report/github.com/sl1pm4t/k2tf)
+[![Release](https://img.shields.io/github/release-pre/sl1pm4t/k2tf.svg)](https://github.com/sl1pm4t/k2tf/releases)
 
 A tool for converting Kubernetes API Objects (in YAML format) into HashiCorp's Terraform configuration language.
 
@@ -68,3 +70,7 @@ $ make build
 ```
 $ make test
 ```
+
+---
+
+[![Downloads](https://img.shields.io/github/downloads/sl1pm4t/k2tf/total.svg)](https://img.shields.io/github/downloads/sl1pm4t/k2tf/total.svg)
