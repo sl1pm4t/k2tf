@@ -31,6 +31,28 @@ func TestToTerraformAttributeName(t *testing.T) {
 			},
 			"replicas",
 		},
+		{
+			"non_resource_urls",
+			args{
+				&reflect.StructField{
+					Name: "NonResourceURLs",
+					Tag:  `json:"nonResourceURLs,omitempty" protobuf:"bytes,5,rep,name=nonResourceURLs"`,
+				},
+				"cluster_role.rule.",
+			},
+			"non_resource_urls",
+		},
+		{
+			"non_resource_urls",
+			args{
+				&reflect.StructField{
+					Name: "NonResourceURLs",
+					Tag:  `json:"nonResourceURLs,omitempty" protobuf:"bytes,5,rep,name=nonResourceURLs"`,
+				},
+				"role.rule.",
+			},
+			"non_resource_urls",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -164,6 +186,24 @@ func Test_normalizeTerraformName(t *testing.T) {
 				"",
 			},
 			"metadata",
+		},
+		{
+			"non_resource_urls",
+			args{
+				"nonResourceURLs",
+				false,
+				"cluster_role.rule.",
+			},
+			"non_resource_urls",
+		},
+		{
+			"non_resource_urls",
+			args{
+				"nonResourceURLs",
+				false,
+				"role.rule.",
+			},
+			"non_resource_urls",
 		},
 	}
 	for _, tt := range tests {

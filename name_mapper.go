@@ -62,19 +62,21 @@ func normalizeTerraformName(s string, toSingular bool, path string) string {
 	case "DaemonSet":
 		return "daemonset"
 
+	case "nonResourceURLs":
+		if strings.Contains(path, "role.rule.") {
+			return "non_resource_urls"
+		}
+
 	case "updateStrategy":
 		if !strings.Contains(path, "stateful") {
 			return "strategy"
 		}
-
-		fallthrough
-
-	default:
-		if toSingular {
-			s = inflection.Singular(s)
-		}
-		s = strcase.ToSnake(s)
 	}
+
+	if toSingular {
+		s = inflection.Singular(s)
+	}
+	s = strcase.ToSnake(s)
 
 	return s
 }
