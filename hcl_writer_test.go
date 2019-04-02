@@ -687,6 +687,9 @@ const statefulSetHCL = `resource "kubernetes_stateful_set" "web" {
         }
       }
     }
+    update_strategy {
+      type = "RollingUpdate"
+    }
     volume_claim_template {
       metadata {
         name = "www"

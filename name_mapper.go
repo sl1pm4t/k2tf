@@ -33,10 +33,10 @@ func init() {
 //   e.g. `type ContainerPort struct` -> "ports" in YAML
 // so we need to extract the JSON name from the StructField tag.
 // Finally, the attribute name is converted to snake case.
-func ToTerraformAttributeName(field *reflect.StructField) string {
+func ToTerraformAttributeName(field *reflect.StructField, path string) string {
 	name := extractProtobufName(field)
 
-	return normalizeTerraformName(name, false)
+	return normalizeTerraformName(name, false, path)
 }
 
 // ToTerraformSubBlockName takes the reflect.StructField data of a Kubernetes object attribute
@@ -46,21 +46,28 @@ func ToTerraformAttributeName(field *reflect.StructField) string {
 //   e.g. `type ContainerPort struct` -> "ports" in YAML
 // so we need to extract the JSON name from the StructField tag.
 // Next, the attribute name is converted to singular + snake case.
-func ToTerraformSubBlockName(field *reflect.StructField) string {
+func ToTerraformSubBlockName(field *reflect.StructField, path string) string {
 	name := extractProtobufName(field)
 
-	return normalizeTerraformName(name, true)
+	return normalizeTerraformName(name, true, path)
 }
 
 // normalizeTerraformName converts the given string to snake case
 // and optionally to singular form of the given word
-func normalizeTerraformName(s string, toSingular bool) string {
+// s is the string to normalize
+// set toSingular to true to singularize the given word
+// path is the full schema path to the named element
+func normalizeTerraformName(s string, toSingular bool, path string) string {
 	switch s {
 	case "DaemonSet":
 		return "daemonset"
 
 	case "updateStrategy":
-		return "strategy"
+		if !strings.Contains(path, "stateful") {
+			return "strategy"
+		}
+
+		fallthrough
 
 	default:
 		if toSingular {
@@ -116,7 +123,7 @@ func extractProtobufName(field *reflect.StructField) string {
 func ToTerraformResourceType(obj runtime.Object) string {
 	tmeta := typeMeta(obj)
 
-	return "kubernetes_" + normalizeTerraformName(tmeta.Kind, false)
+	return "kubernetes_" + normalizeTerraformName(tmeta.Kind, false, "")
 }
 
 // ToTerraformResourceName extract the Kubernetes API Objects' name from the
@@ -124,7 +131,7 @@ func ToTerraformResourceType(obj runtime.Object) string {
 func ToTerraformResourceName(obj runtime.Object) string {
 	meta := objectMeta(obj)
 
-	return normalizeTerraformName(meta.Name, false)
+	return normalizeTerraformName(meta.Name, false, "")
 }
 
 // NormalizeTerraformMapKey converts Map keys to a form suitable for Terraform

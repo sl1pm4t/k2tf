@@ -13,6 +13,7 @@ import (
 func TestToTerraformAttributeName(t *testing.T) {
 	type args struct {
 		field *reflect.StructField
+		path  string
 	}
 	tests := []struct {
 		name string
@@ -26,13 +27,14 @@ func TestToTerraformAttributeName(t *testing.T) {
 					Name: "Replicas",
 					Tag:  `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`,
 				},
+				"",
 			},
 			"replicas",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ToTerraformAttributeName(tt.args.field); got != tt.want {
+			if got := ToTerraformAttributeName(tt.args.field, tt.args.path); got != tt.want {
 				t.Errorf("ToTerraformAttributeName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -42,6 +44,7 @@ func TestToTerraformAttributeName(t *testing.T) {
 func TestToTerraformSubBlockName(t *testing.T) {
 	type args struct {
 		field *reflect.StructField
+		path  string
 	}
 	tests := []struct {
 		name string
@@ -55,6 +58,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 					Name: "Container",
 					Tag:  `json:"containers" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,2,rep,name=containers"`,
 				},
+				"",
 			},
 			"container",
 		},
@@ -65,6 +69,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 					Name: "ContainerPort",
 					Tag:  `json:"ports,omitempty" patchStrategy:"merge" patchMergeKey:"containerPort" protobuf:"bytes,6,rep,name=ports"`,
 				},
+				"",
 			},
 			"port",
 		},
@@ -75,18 +80,31 @@ func TestToTerraformSubBlockName(t *testing.T) {
 					Name: "MatchLabels",
 					Tag:  `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`,
 				},
+				"",
 			},
 			"match_labels",
 		},
 		{
-			"update_strategy",
+			"update_strategy/daemonset",
 			args{
 				&reflect.StructField{
 					Name: "UpdateStrategy",
 					Tag:  `json:"updateStrategy,omitempty" protobuf:"bytes,1,rep,name=updateStrategy"`,
 				},
+				"daemonset.spec.",
 			},
 			"strategy",
+		},
+		{
+			"update_strategy/statefulset",
+			args{
+				&reflect.StructField{
+					Name: "UpdateStrategy",
+					Tag:  `json:"updateStrategy,omitempty" protobuf:"bytes,1,rep,name=updateStrategy"`,
+				},
+				"stateful_set.spec.",
+			},
+			"update_strategy",
 		},
 		{
 			"volume_source",
@@ -95,13 +113,14 @@ func TestToTerraformSubBlockName(t *testing.T) {
 					Name: "VolumeSource",
 					Tag:  `json:",inline" protobuf:"bytes,2,opt,name=volumeSource"`,
 				},
+				"",
 			},
 			"volume_source",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ToTerraformSubBlockName(tt.args.field); got != tt.want {
+			if got := ToTerraformSubBlockName(tt.args.field, tt.args.path); got != tt.want {
 				t.Errorf("ToTerraformSubBlockName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -112,6 +131,7 @@ func Test_normalizeTerraformName(t *testing.T) {
 	type args struct {
 		s          string
 		toSingular bool
+		path       string
 	}
 	tests := []struct {
 		name string
@@ -123,6 +143,7 @@ func Test_normalizeTerraformName(t *testing.T) {
 			args{
 				"labels",
 				true,
+				"",
 			},
 			"labels",
 		},
@@ -131,6 +152,7 @@ func Test_normalizeTerraformName(t *testing.T) {
 			args{
 				"matchLabels",
 				true,
+				"",
 			},
 			"match_labels",
 		},
@@ -139,13 +161,14 @@ func Test_normalizeTerraformName(t *testing.T) {
 			args{
 				"metadata",
 				true,
+				"",
 			},
 			"metadata",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := normalizeTerraformName(tt.args.s, tt.args.toSingular); got != tt.want {
+			if got := normalizeTerraformName(tt.args.s, tt.args.toSingular, tt.args.path); got != tt.want {
 				t.Errorf("normalizeTerraformName() = %v, want %v", got, tt.want)
 			}
 		})

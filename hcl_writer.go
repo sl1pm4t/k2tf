@@ -277,7 +277,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 			field = w.currentSlice()
 		}
 
-		blockName := ToTerraformSubBlockName(field)
+		blockName := ToTerraformSubBlockName(field, w.currentBlock.FullSchemaName())
 		w.debugf("creating blk [%s] for field [%s]", blockName, field.Name)
 		blk := w.openBlk(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
 
@@ -340,7 +340,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
-				ToTerraformAttributeName(w.currentField),
+				ToTerraformAttributeName(w.currentField, w.currentBlock.FullSchemaName()),
 				w.convertCtyValue(v.Interface()),
 			)
 		}
@@ -350,7 +350,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 
 // Map is called everytime reflectwalk enters a Map
 func (w *ObjectWalker) Map(m reflect.Value) error {
-	blockName := ToTerraformSubBlockName(w.currentField)
+	blockName := ToTerraformSubBlockName(w.currentField, w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
 	w.openBlk(blockName, w.currentField.Name, hcl)
 
@@ -416,7 +416,7 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 			// primitive type
 			w.currentBlock.hasValue = true
 			w.currentBlock.hcl.Body().SetAttributeValue(
-				ToTerraformAttributeName(w.currentField),
+				ToTerraformAttributeName(w.currentField, w.currentBlock.FullSchemaName()),
 				val,
 			)
 

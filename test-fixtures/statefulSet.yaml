@@ -24,6 +24,8 @@ spec:
           volumeMounts:
             - name: www
               mountPath: /usr/share/nginx/html
+  updateStrategy:
+    type: RollingUpdate
   volumeClaimTemplates:
     - metadata:
         name: www
