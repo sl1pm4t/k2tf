@@ -50,7 +50,6 @@ type ObjectWalker struct {
 	// sub block tracking
 	currentBlock *hclBlock
 	fields       []*reflect.StructField
-	currentField *reflect.StructField
 
 	// slices of structs
 	slices           []*reflect.StructField
@@ -75,13 +74,6 @@ func NewObjectWalker(obj runtime.Object, dst *hclwrite.Body) (*ObjectWalker, err
 	return w, nil
 }
 
-func (w *ObjectWalker) setCurrentField(f *reflect.StructField) {
-	if f != nil {
-		w.debugf("setting currentField to %s", f.Name)
-		w.currentField = f
-	}
-}
-
 func (w *ObjectWalker) setCurrentSlice(f *reflect.StructField) {
 	if f != nil {
 		w.debugf("setting setCurrentSlice to %s", f.Name)
@@ -102,14 +94,20 @@ func (w *ObjectWalker) fieldPop() *reflect.StructField {
 	w.fields = w.fields[:len(w.fields)-1]
 
 	w.debugf("fieldPop %s", result.Name)
-	w.setCurrentField(result)
 	return result
 }
 
 func (w *ObjectWalker) fieldPush(v *reflect.StructField) {
 	w.fields = append(w.fields, v)
 	w.debugf("fieldPush %s", v.Name)
-	w.setCurrentField(v)
+}
+
+func (w *ObjectWalker) field() *reflect.StructField {
+	if len(w.fields) > 0 {
+		f := w.fields[len(w.fields)-1]
+		return f
+	}
+	return nil
 }
 
 func (w *ObjectWalker) slicePop() *reflect.StructField {
@@ -251,7 +249,7 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 //
 func (w *ObjectWalker) Struct(v reflect.Value) error {
 	if !v.CanInterface() {
-		w.debugf("skipping Struct [field: %s, type: %s] - CanInterface() = false", w.currentField.Name, v.Type())
+		w.debugf("skipping Struct [field: %s, type: %s] - CanInterface() = false", w.field().Name, v.Type())
 		return nil
 	}
 
@@ -333,12 +331,12 @@ func (w *ObjectWalker) StructField(field reflect.StructField, v reflect.Value) e
 // If it's not a zero value, add an Attribute to the current HCL Block.
 func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
-		w.debug(fmt.Sprintf("%s = %v (%T)", w.currentField.Name, v.Interface(), v.Interface()))
+		w.debug(fmt.Sprintf("%s = %v (%T)", w.field().Name, v.Interface(), v.Interface()))
 
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
-				ToTerraformAttributeName(w.currentField, w.currentBlock.FullSchemaName()),
+				ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
 				w.convertCtyValue(v.Interface()),
 			)
 		}
@@ -348,9 +346,9 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 
 // Map is called everytime reflectwalk enters a Map
 func (w *ObjectWalker) Map(m reflect.Value) error {
-	blockName := ToTerraformSubBlockName(w.currentField, w.currentBlock.FullSchemaName())
+	blockName := ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
-	w.openBlk(blockName, w.currentField.Name, hcl)
+	w.openBlk(blockName, w.field().Name, hcl)
 
 	return nil
 }
@@ -372,7 +370,7 @@ func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 
 // Slice implements reflectwalk.SliceWalker interface
 func (w *ObjectWalker) Slice(v reflect.Value) error {
-	w.slicePush(w.currentField)
+	w.slicePush(w.field())
 	if !v.IsValid() {
 		w.debug(fmt.Sprint("skipping invalid slice "))
 		w.ignoreSliceElems = true
@@ -414,7 +412,7 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 			// primitive type
 			w.currentBlock.hasValue = true
 			w.currentBlock.hcl.Body().SetAttributeValue(
-				ToTerraformAttributeName(w.currentField, w.currentBlock.FullSchemaName()),
+				ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
 				val,
 			)
 
@@ -510,8 +508,8 @@ func (w *ObjectWalker) log(s string, e *zerolog.Event) {
 		Str("type", w.ResourceType()).
 		Str("name", w.ResourceName())
 
-	if w.currentField != nil {
-		e.Str("field", w.currentField.Name)
+	if w.field() != nil {
+		e.Str("field", w.field().Name)
 	}
 	if w.currentSlice() != nil {
 		e.Str("slice", w.currentSlice().Name)
