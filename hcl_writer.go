@@ -154,14 +154,12 @@ func (w *ObjectWalker) sliceElemTypePop() reflect.Type {
 	return result
 }
 
-type NilSliceElemType struct{}
-
 func (w *ObjectWalker) sliceElemType() reflect.Type {
 	var result reflect.Type
 	if len(w.sliceElemTypes) > 0 {
 		result = w.sliceElemTypes[len(w.sliceElemTypes)-1]
 	} else {
-		result = reflect.TypeOf(NilSliceElemType{})
+		result = reflect.TypeOf(struct{}{})
 	}
 
 	w.debugf("sliceElemType %s", result.Name())
@@ -302,7 +300,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 
 		var err error
 		supported, err := IsAttributeSupported(blk.FullSchemaName())
-		if err != nil && err != attrNotFoundError {
+		if err != nil && err != errAttrNotFound {
 			w.warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
 		blk.unsupported = !supported
@@ -480,7 +478,6 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 		// last resort
 		return cty.StringVal(fmt.Sprintf("%s", val))
 	}
-	return cty.NilVal
 }
 
 var ignoredFields = []string{

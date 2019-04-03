@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func ParseK8SYAML(in io.Reader) ([]runtime.Object, error) {
+func parseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 	var result error
 	objs := []runtime.Object{}
 
@@ -41,7 +41,7 @@ func ParseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 	return objs, result
 }
 
-func ParseK8SJSON(doc []byte) (runtime.Object, error) {
+func parseK8SJSON(doc []byte) (runtime.Object, error) {
 	var result error
 
 	d := scheme.Codecs.UniversalDeserializer()
