@@ -35,26 +35,32 @@ type ObjectWalker struct {
 	// The Kubernetes API Object to be walked
 	RuntimeObject runtime.Object
 
+	// The HCL body where HCL blocks will be appended
+	dst *hclwrite.Body
+
 	// Terraform resource type (e.g. kubernetes_pod)
 	resourceType string
 	// Terraform resource name (adapted from ObjectMeta name attribute)
 	resourceName string
 
-	// debug logging helpers
-	indent string
-
 	// top level HCL
 	isTopLevel bool
-	dst        *hclwrite.Body
 
 	// sub block tracking
 	currentBlock *hclBlock
+
+	// stack of Struct fields
 	fields       []*reflect.StructField
 
 	// slices of structs
 	slices           []*reflect.StructField
+	// sliceField tracks the reflect.StructField for the current slice
 	sliceField       *reflect.StructField
+	// the stack of the Slice element types that are popped and pushed as we walk through object graph
 	sliceElemTypes   []reflect.Type
+	// Flag to indicate if our reflectwalk functions can skip further processing of slice elements.
+	// Slices of primitive values get rendered all at once when we enter the Slice so they don't need
+	// further processing for each element.
 	ignoreSliceElems bool
 }
 
@@ -256,29 +262,32 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 	ty := reflect.TypeOf(v.Interface())
 
 	if w.isTopLevel {
-		// we need to create the top level HCL block
-		// e.g. resource "kubernetes_pod" "name" {
+		// Create the top level HCL block
+		// e.g.
+		//   resource "kubernetes_pod" "name" { }
 		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType(), w.ResourceName()})
 		w.openBlk(w.ResourceType(), typeMeta(w.RuntimeObject).Kind, topLevelBlock)
 		w.isTopLevel = false
 
 	} else {
-		// this struct is a sub-block, create a new HCL block and add to parent
-		field := w.currentField
+		// this struct will be a sub-block
+		// create a new HCL block and add to parent
+		field := w.field()
 
 		if w.sliceElemType() == ty || w.sliceType() == ty {
-			// when iterating over a slice of complex types, the block name is based on the
-			// Slices StructField data instead of the Slice element.
-			w.debug("using sliceField instead of currentField")
+			// When iterating over a slice of complex types, each HCL block name is based on the
+			// StructField metadata of the containing Slice instead of the StructField of each Slice element.
+			// Update field, so when we create the HCL block below it uses the Slice StructField
 			field = w.currentSlice()
 		}
 
+		// generate a block name
 		blockName := ToTerraformSubBlockName(field, w.currentBlock.FullSchemaName())
 		w.debugf("creating blk [%s] for field [%s]", blockName, field.Name)
 		blk := w.openBlk(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
 
-		// Skip some Kubernetes complex types that should be treated as Primitives.
-		// Do this after opening the Block above because reflectwalk will
+		// Skip some Kubernetes complex types that should be treated as primitives.
+		// Do this after opening the block above because reflectwalk will
 		// still call Exit for this struct and we need the calls to closeBlk() to marry up
 		// TODO: figure out a uniform way to handle these cases
 		switch v.Interface().(type) {
@@ -345,6 +354,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 }
 
 // Map is called everytime reflectwalk enters a Map
+// Golang maps become HCL sub-blocks
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
@@ -354,6 +364,7 @@ func (w *ObjectWalker) Map(m reflect.Value) error {
 }
 
 // MapElem is called everytime reflectwalk enters a Map element
+//  normalize the element key, and write element value to the HCL block as an attribute value
 func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 	w.debug(fmt.Sprintf("    %s = %v (%T)", k, v.Interface(), v.Interface()))
 
@@ -368,7 +379,26 @@ func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 	return nil
 }
 
-// Slice implements reflectwalk.SliceWalker interface
+/*
+Slice implements reflectwalk.SliceWalker interface, and is called each time reflectwalk enters a Slice
+Golang slices need to be converted to HCL in one of two ways:
+
+*1 - a simple list of primitive values:
+	list_name = ["foo", "bar", "baz"]
+
+*2 - a list of complex objects that will be rendered as repeating HCL blocks
+	container {
+		name  = "blah"
+		image = "nginx"
+	}
+
+	container {
+		name  = "foo"
+		image = "sidecar"
+	}
+
+For the second case, each time we process a SliceElem we need to use the StructField data of the Slice itself, and not the slice elem.
+*/
 func (w *ObjectWalker) Slice(v reflect.Value) error {
 	w.slicePush(w.field())
 	if !v.IsValid() {
@@ -392,11 +422,11 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 		case vt.Kind() == reflect.Struct:
 			fallthrough
 		case vt.Kind() == reflect.Ptr:
-			w.debugf("slice of Pointers / Structs")
+			// Slice of complex types
 			w.sliceElemTypePush(vt)
-			// walk elements
 
 		default:
+			// Slice of primitives
 			valTy, err := gocty.ImpliedType(v.Interface())
 			if err != nil {
 				log.Panic().Interface("cannot encode %T as HCL expression", v.Interface()).Err(err)
@@ -416,7 +446,8 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 				val,
 			)
 
-			// don't need to walk through all Slice Elements
+			// hint to other funcs that we don't need to walk through all Slice Elements because the
+			// primitive values have already been rendered
 			w.ignoreSliceElems = true
 		}
 
