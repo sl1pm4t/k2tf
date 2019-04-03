@@ -402,11 +402,11 @@ For the second case, each time we process a SliceElem we need to use the StructF
 func (w *ObjectWalker) Slice(v reflect.Value) error {
 	w.slicePush(w.field())
 	if !v.IsValid() {
-		w.debug(fmt.Sprint("skipping invalid slice "))
+		w.debug("skipping invalid slice ")
 		w.ignoreSliceElems = true
 
 	} else if IsZero(v) {
-		w.debug(fmt.Sprint("skipping empty slice "))
+		w.debug("skipping empty slice ")
 		w.ignoreSliceElems = true
 
 	} else {
