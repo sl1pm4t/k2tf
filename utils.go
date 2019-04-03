@@ -30,7 +30,6 @@ func IsZero(v reflect.Value) bool {
 // IsInlineStruct looks at the json tag of the given StructField, to determine
 // if it has been marked as "inline"
 // e.g. someField string `json:",inline"`
-//
 func IsInlineStruct(field *reflect.StructField) bool {
 	jsonTag := field.Tag.Get("json")
 	if jsonTag == "" {
@@ -41,12 +40,12 @@ func IsInlineStruct(field *reflect.StructField) bool {
 	comma := strings.Index(jsonTag, ",")
 	if comma == -1 {
 		return false
-	} else {
-		tagParts := strings.Split(jsonTag, ",")
-		for _, part := range tagParts {
-			if part == "inline" {
-				return true
-			}
+	}
+
+	tagParts := strings.Split(jsonTag, ",")
+	for _, part := range tagParts {
+		if part == "inline" {
+			return true
 		}
 	}
 
