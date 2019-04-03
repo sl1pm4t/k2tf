@@ -50,14 +50,14 @@ type ObjectWalker struct {
 	currentBlock *hclBlock
 
 	// stack of Struct fields
-	fields       []*reflect.StructField
+	fields []*reflect.StructField
 
 	// slices of structs
-	slices           []*reflect.StructField
+	slices []*reflect.StructField
 	// sliceField tracks the reflect.StructField for the current slice
-	sliceField       *reflect.StructField
+	sliceField *reflect.StructField
 	// the stack of the Slice element types that are popped and pushed as we walk through object graph
-	sliceElemTypes   []reflect.Type
+	sliceElemTypes []reflect.Type
 	// Flag to indicate if our reflectwalk functions can skip further processing of slice elements.
 	// Slices of primitive values get rendered all at once when we enter the Slice so they don't need
 	// further processing for each element.
@@ -170,24 +170,24 @@ func (w *ObjectWalker) sliceElemType() reflect.Type {
 	return result
 }
 
-// openBlk opens a new HCL resource block or sub-block
+// openBlock opens a new HCL resource block or sub-block
 // It creates a hclBlock object so we can track hierarchy of blocks
 // within the resource tree
-func (w *ObjectWalker) openBlk(name, fieldName string, hcl *hclwrite.Block) *hclBlock {
+func (w *ObjectWalker) openBlock(name, fieldName string, hcl *hclwrite.Block) *hclBlock {
 	w.debugf("opening hclBlock for field: %s", name)
-	blk := &hclBlock{
+	b := &hclBlock{
 		name:      name,
 		fieldName: fieldName,
 		parent:    w.currentBlock,
 		hcl:       hcl,
 	}
 
-	w.currentBlock = blk
-	return blk
+	w.currentBlock = b
+	return b
 }
 
-// closeBlk writes the generated HCL to the hclwriter
-func (w *ObjectWalker) closeBlk() *hclBlock {
+// closeBlock writes the generated HCL to the hclwriter
+func (w *ObjectWalker) closeBlock() *hclBlock {
 	w.debugf("closing hclBlock: %s", w.currentBlock.name)
 
 	parent := w.currentBlock.parent
@@ -241,7 +241,7 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 		fallthrough
 
 	case reflectwalk.Map:
-		w.closeBlk()
+		w.closeBlock()
 
 	case reflectwalk.StructField:
 		w.fieldPop()
@@ -266,7 +266,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// e.g.
 		//   resource "kubernetes_pod" "name" { }
 		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType(), w.ResourceName()})
-		w.openBlk(w.ResourceType(), typeMeta(w.RuntimeObject).Kind, topLevelBlock)
+		w.openBlock(w.ResourceType(), typeMeta(w.RuntimeObject).Kind, topLevelBlock)
 		w.isTopLevel = false
 
 	} else {
@@ -283,12 +283,12 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 
 		// generate a block name
 		blockName := ToTerraformSubBlockName(field, w.currentBlock.FullSchemaName())
-		w.debugf("creating blk [%s] for field [%s]", blockName, field.Name)
-		blk := w.openBlk(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
+		w.debugf("creating block [%s] for field [%s]", blockName, field.Name)
+		b := w.openBlock(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
 
 		// Skip some Kubernetes complex types that should be treated as primitives.
 		// Do this after opening the block above because reflectwalk will
-		// still call Exit for this struct and we need the calls to closeBlk() to marry up
+		// still call Exit for this struct and we need the calls to closeBlock() to marry up
 		// TODO: figure out a uniform way to handle these cases
 		switch v.Interface().(type) {
 		case resource.Quantity:
@@ -296,21 +296,21 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		case intstr.IntOrString:
 			ios := v.Interface().(intstr.IntOrString)
 			if ios.IntVal > 0 || ios.StrVal != "" {
-				blk.hasValue = false
-				blk.parent.SetAttributeValue(blockName, w.convertCtyValue(v.Interface()))
-				blk.parent.hasValue = true
+				b.hasValue = false
+				b.parent.SetAttributeValue(blockName, w.convertCtyValue(v.Interface()))
+				b.parent.hasValue = true
 			}
 			return reflectwalk.SkipEntry
 		}
 
-		blk.inlined = IsInlineStruct(field)
+		b.inlined = IsInlineStruct(field)
 
 		var err error
-		supported, err := IsAttributeSupported(blk.FullSchemaName())
+		supported, err := IsAttributeSupported(b.FullSchemaName())
 		if err != nil && err != errAttrNotFound {
 			w.warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
 		}
-		blk.unsupported = !supported
+		b.unsupported = !supported
 	}
 
 	return nil
@@ -358,7 +358,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
-	w.openBlk(blockName, w.field().Name, hcl)
+	w.openBlock(blockName, w.field().Name, hcl)
 
 	return nil
 }

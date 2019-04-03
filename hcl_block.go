@@ -24,7 +24,7 @@ type hclBlock struct {
 	hcl *hclwrite.Block
 
 	// hasValue means a child field of this block had a non-nil / non-zero value.
-	// If this is false when closeBlk() is called, the block won't be appended to
+	// If this is false when closeBlock() is called, the block won't be appended to
 	// parent
 	hasValue bool
 
