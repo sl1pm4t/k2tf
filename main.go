@@ -35,7 +35,7 @@ var (
 	output             string
 	includeUnsupported bool
 	noColor            bool
-	overwriteExisting            bool
+	overwriteExisting  bool
 )
 
 func init() {
@@ -92,9 +92,8 @@ func main() {
 func readInput() []runtime.Object {
 	if input == "-" || input == "" {
 		return readStdinInput()
-	} else {
-		return readFilesInput()
 	}
+	return readFilesInput()
 }
 
 func readStdinInput() []runtime.Object {
@@ -110,7 +109,7 @@ func readStdinInput() []runtime.Object {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	parsed, err := ParseK8SYAML(reader)
+	parsed, err := parseK8SYAML(reader)
 	if err != nil {
 		log.Fatal().Err(err)
 	}
@@ -119,7 +118,7 @@ func readStdinInput() []runtime.Object {
 		if obj.GetObjectKind().GroupVersionKind().Kind == "List" {
 			list := obj.(*corev1.List)
 			for _, item := range list.Items {
-				itemObj, err := ParseK8SJSON(item.Raw)
+				itemObj, err := parseK8SJSON(item.Raw)
 				if err != nil {
 					log.Error().Err(err)
 					continue
@@ -161,7 +160,7 @@ func readFilesInput() []runtime.Object {
 		}
 
 		r := bytes.NewReader(content)
-		obj, err := ParseK8SYAML(r)
+		obj, err := parseK8SYAML(r)
 		if err != nil {
 			log.Fatal().Err(err)
 		}

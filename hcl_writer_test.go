@@ -214,7 +214,7 @@ func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
 
 func mustParseTestYAML(s string) runtime.Object {
 	r := strings.NewReader(s)
-	objs, err := ParseK8SYAML(r)
+	objs, err := parseK8SYAML(r)
 	if err != nil {
 		panic(err)
 	}

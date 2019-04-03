@@ -8,7 +8,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
 )
 
-var attrNotFoundError = fmt.Errorf("could not find attribute in resource schema")
+var errAttrNotFound = fmt.Errorf("could not find attribute in resource schema")
 
 // ResourceSchema returns the named Terraform Provider Resource schema
 // as defined in the `terraform-provider-kubernetes` package
@@ -58,5 +58,5 @@ func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
 
 	}
 
-	return false, attrNotFoundError
+	return false, errAttrNotFound
 }
