@@ -63,7 +63,7 @@ func normalizeTerraformName(s string, toSingular bool, path string) string {
 		return "daemonset"
 
 	case "nonResourceURLs":
-		if strings.Contains(path, "role.rule.") {
+		if strings.Contains(path, "role.rule") {
 			return "non_resource_urls"
 		}
 
