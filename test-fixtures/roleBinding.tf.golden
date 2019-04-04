@@ -1,0 +1,15 @@
+resource "kubernetes_role_binding" "elasticsearch" {
+  metadata {
+    name = "elasticsearch"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "elasticsearch"
+    namespace = "default"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = "elasticsearch"
+  }
+}

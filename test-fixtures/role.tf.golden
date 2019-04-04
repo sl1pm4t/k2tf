@@ -1,0 +1,10 @@
+resource "kubernetes_role" "elasticsearch" {
+  metadata {
+    name = "elasticsearch"
+  }
+  rule {
+    verbs      = ["get"]
+    api_groups = [""]
+    resources  = ["endpoints"]
+  }
+}

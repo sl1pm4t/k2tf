@@ -1,0 +1,51 @@
+resource "kubernetes_pod" "node_exporter_7fth_7" {
+  metadata {
+    name          = "node-exporter-7fth7"
+    generate_name = "node-exporter-"
+    namespace     = "prometheus"
+    labels {
+      controller-revision-hash = "2418008739"
+      name                     = "node-exporter"
+      pod-template-generation  = "1"
+    }
+    annotations {
+      "prometheus.io/scrape" = "true"
+      "prometheus.io/port"   = "9100"
+      "prometheus.io/scheme" = "http"
+    }
+  }
+  spec {
+    volume {
+      name = "default-token-rkd4g"
+      secret {
+        secret_name  = "default-token-rkd4g"
+        default_mode = 420
+      }
+    }
+    container {
+      name  = "prom-node-exporter"
+      image = "prom/node-exporter"
+      port {
+        name           = "metrics"
+        container_port = 9100
+        protocol       = "TCP"
+      }
+      volume_mount {
+        name       = "default-token-rkd4g"
+        read_only  = true
+        mount_path = "/var/run/secrets/kubernetes.io/serviceaccount"
+      }
+      termination_message_path = "/dev/termination-log"
+      image_pull_policy        = "Always"
+      security_context {
+        privileged = true
+      }
+    }
+    restart_policy                   = "Always"
+    termination_grace_period_seconds = 30
+    dns_policy                       = "ClusterFirst"
+    service_account_name             = "default"
+    node_name                        = "gke-cloudlogs-dev-default-pool-4a2a9dae-9b01"
+    host_pid                         = true
+  }
+}

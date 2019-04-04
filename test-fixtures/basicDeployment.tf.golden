@@ -1,0 +1,47 @@
+resource "kubernetes_deployment" "baz_app" {
+  metadata {
+    name      = "baz-app"
+    namespace = "bat"
+    annotations {
+      foo = "fam"
+    }
+  }
+  spec {
+    replicas = 2
+    selector {
+      match_labels {
+        app = "nginx"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          app = "nginx"
+        }
+        annotations {
+          foo = "fam"
+        }
+      }
+      spec {
+        container {
+          name  = "nginx"
+          image = "nginx"
+          args  = ["--debug", "--test"]
+          port {
+            container_port = 80
+          }
+          resources {
+            limits {
+              cpu    = "1"
+              memory = "1Gi"
+            }
+            requests {
+              cpu    = "1"
+              memory = "512Mi"
+            }
+          }
+        }
+      }
+    }
+  }
+}

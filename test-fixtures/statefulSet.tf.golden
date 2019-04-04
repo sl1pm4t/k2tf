@@ -1,0 +1,55 @@
+resource "kubernetes_stateful_set" "web" {
+  metadata {
+    name = "web"
+    labels {
+      app = "nginx"
+    }
+  }
+  spec {
+    replicas = 14
+    selector {
+      match_labels {
+        app = "nginx"
+      }
+    }
+    template {
+      metadata {
+        labels {
+          app = "nginx"
+        }
+      }
+      spec {
+        container {
+          name  = "nginx"
+          image = "k8s.gcr.io/nginx-slim:0.8"
+          port {
+            name           = "web"
+            container_port = 80
+          }
+          volume_mount {
+            name       = "www"
+            mount_path = "/usr/share/nginx/html"
+          }
+        }
+      }
+    }
+    volume_claim_template {
+      metadata {
+        name = "www"
+      }
+      spec {
+        access_modes = ["ReadWriteOnce"]
+        resources {
+          requests {
+            storage = "1Gi"
+          }
+        }
+        storage_class_name = "thin-disk"
+      }
+    }
+    service_name = "nginx"
+    update_strategy {
+      type = "RollingUpdate"
+    }
+  }
+}
