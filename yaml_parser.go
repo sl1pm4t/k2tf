@@ -6,6 +6,7 @@ import (
 	"io"
 
 	multierror "github.com/hashicorp/go-multierror"
+	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -24,11 +25,13 @@ func parseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 			break
 		}
 		if err != nil {
+			log.Error().Err(err)
 			result = multierror.Append(result, err)
 		}
 		d := scheme.Codecs.UniversalDeserializer()
 		obj, _, err := d.Decode(doc, nil, nil)
 		if err != nil {
+			log.Error().Err(err)
 			wrapped := fmt.Errorf("could not decode yaml object #%d: %s", i, err)
 			result = multierror.Append(result, wrapped)
 		}

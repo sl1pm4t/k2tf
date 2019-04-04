@@ -1,0 +1,19 @@
+---
+# Source: prometheus/templates/server-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: prometheus
+    chart: prometheus-5.5.3
+    component: "server"
+    heritage: Tiller
+    release: RELEASE-NAME
+  name: RELEASE-NAME-prometheus-server
+spec:
+  accessModes:
+    - ReadWriteOnce
+    
+  resources:
+    requests:
+      storage: "8Gi"

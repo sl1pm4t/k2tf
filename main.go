@@ -72,7 +72,7 @@ func main() {
 
 	objs := readInput()
 
-	log.Debug().Int("count", len(objs)).Msg("read objects from input")
+	log.Debug().Msgf("read %d objects from input", len(objs))
 
 	w, closer := setupOutput()
 	defer closer()
@@ -154,6 +154,7 @@ func readFilesInput() []runtime.Object {
 	}
 
 	readFile := func(fileName string) {
+		log.Debug().Msgf("reading file: %s", fileName)
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
 			log.Fatal().Err(err)
@@ -169,6 +170,8 @@ func readFilesInput() []runtime.Object {
 
 	if fs.Mode().IsDir() {
 		// read directory
+		log.Debug().Msgf("reading directory: %s", input)
+
 		dirContents, err := file.Readdirnames(0)
 		if err != nil {
 			log.Fatal().Err(err)
@@ -176,7 +179,7 @@ func readFilesInput() []runtime.Object {
 
 		for _, f := range dirContents {
 			if strings.HasSuffix(f, ".yml") || strings.HasSuffix(f, ".yaml") {
-				readFile(filepath.Join(fs.Name(), f))
+				readFile(filepath.Join(input, f))
 			}
 		}
 
