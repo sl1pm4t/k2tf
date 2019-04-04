@@ -203,7 +203,7 @@ func setupOutput() (io.Writer, func()) {
 			log.Fatal().Str("file", output).Msg("output file already exists")
 		}
 
-		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE, 0755)
+		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
 		if err != nil {
 			log.Fatal().Err(err)
 		}
