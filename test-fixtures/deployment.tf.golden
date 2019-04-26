@@ -33,14 +33,14 @@ resource "kubernetes_deployment" "backend_api" {
               key  = "backend-api.yml"
               path = "backend-api.yml"
             }
-            default_mode = 420
+            default_mode = "0644"
           }
         }
         volume {
           name = "nginx-ssl"
           secret {
             secret_name  = "nginx-ssl"
-            default_mode = 420
+            default_mode = "0644"
           }
         }
         container {

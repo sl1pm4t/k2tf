@@ -19,7 +19,7 @@ resource "kubernetes_pod" "node_exporter_7fth_7" {
       name = "default-token-rkd4g"
       secret {
         secret_name  = "default-token-rkd4g"
-        default_mode = 420
+        default_mode = "0644"
       }
     }
     container {
