@@ -3,3 +3,4 @@ k2tf
 .vscode/*
 test-output/*
 dist
+.idea
