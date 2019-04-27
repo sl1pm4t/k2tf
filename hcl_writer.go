@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -464,6 +465,7 @@ func (w *ObjectWalker) SliceElem(i int, v reflect.Value) error {
 
 // convertCtyValue takes an interface and converts to HCL types
 func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
+	w.debugf("processing %s (%T)", w.field().Name, val)
 	switch val.(type) {
 	case string:
 		return cty.StringVal(val.(string))
@@ -472,6 +474,13 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 	case int:
 		return cty.NumberIntVal(int64(val.(int)))
 	case int32:
+		// On volume source blocks, the mode and default_mode attributes are now mandatorily a string representation of an octal value with a leading zero
+		if w.currentSlice() != nil && w.currentSlice().Name == "Volumes" && (w.field().Name == "DefaultMode" || w.field().Name == "Mode") {
+			str := "0" + strconv.FormatInt(int64(val.(int32)), 8)
+			w.debugf("converting %s from decimal int '%d' to octal string '%s'", w.field().Name, val.(int32), str)
+			return cty.StringVal(str)
+		}
+
 		return cty.NumberIntVal(int64(val.(int32)))
 	case *int32:
 		val = *val.(*int32)
