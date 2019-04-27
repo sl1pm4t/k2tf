@@ -61,6 +61,10 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_deployment",
 		},
 		{
+			"endpoints",
+			"kubernetes_endpoints",
+		},
+		{
 			"podNodeExporter",
 			"kubernetes_pod",
 		},
