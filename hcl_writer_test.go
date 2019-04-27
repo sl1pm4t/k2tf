@@ -173,6 +173,7 @@ func testParseK8SYAML(t *testing.T, s string) runtime.Object {
 	objs, err := parseK8SYAML(r)
 	if err != nil {
 		t.Error("testParseK8SYAML err: ", err)
+		return nil
 	}
 	return objs[0]
 }
