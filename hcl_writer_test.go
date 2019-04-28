@@ -145,7 +145,7 @@ func validateTerraformConfig(t *testing.T, resourceType string, cfg *config.RawC
 
 func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
 	// write HCL to temp location where Terraform can load it
-	tmpDir, err := ioutil.TempDir("", "ky2tf")
+	tmpDir, err := ioutil.TempDir("", "k2tf")
 	if err != nil {
 		t.Fatal(err)
 	}
