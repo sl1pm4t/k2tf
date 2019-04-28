@@ -9,15 +9,22 @@ steps:
 
   - name: test
     image: golang:1.12
+    volumes:
+      - name: cache
+        path: /go/pkg
     commands:
-      - go test -v
+      - go mod download
+      # Fail if git state is dirty after download modules
+      - git diff --quiet
+      - make test
 
   - name: build
     image: golang:1.12
+    volumes:
+        - name: cache
+          path: /go/pkg
     commands:
-      - go mod download
-      - git diff --quiet
-      - go build -v
+      - make build
 
   - name: release
     image: golang:1.12
@@ -26,5 +33,14 @@ steps:
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
+    volumes:
+      - name: cache
+        path: /go/pkg
     when:
       event: tag
+      branch:
+      - master
+
+volumes:
+  - name: cache
+    temp: {}
