@@ -37,8 +37,6 @@ steps:
       - name: cache
         path: /go/pkg
     when:
-      branch:
-        - master
       event:
         - tag
 
