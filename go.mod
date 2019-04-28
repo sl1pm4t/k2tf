@@ -1,7 +1,6 @@
 module github.com/sl1pm4t/k2tf
 
 require (
-	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20190416162332-2c5a4b7d729a
