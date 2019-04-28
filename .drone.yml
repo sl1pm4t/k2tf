@@ -37,9 +37,10 @@ steps:
       - name: cache
         path: /go/pkg
     when:
-      event: tag
       branch:
-      - master
+        - master
+      event:
+        - tag
 
 volumes:
   - name: cache
