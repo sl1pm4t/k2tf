@@ -3,6 +3,7 @@ module github.com/sl1pm4t/k2tf
 require (
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/hashicorp/go-multierror v1.0.0
+	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20190416162332-2c5a4b7d729a
 	github.com/hashicorp/terraform v0.12.0-alpha4.0.20190417210818-177a7afb781f
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
