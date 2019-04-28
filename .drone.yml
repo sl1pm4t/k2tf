@@ -10,12 +10,13 @@ steps:
   - name: test
     image: golang:1.12
     commands:
-      - "sed -e '/+incompatible /d' -i go.sum"
       - go test -v
 
   - name: build
     image: golang:1.12
     commands:
+      - go mod download
+      - git diff --quiet
       - go build -v
 
   - name: release
