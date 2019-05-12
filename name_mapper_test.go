@@ -277,3 +277,25 @@ func TestToTerraformResourceType(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeTerraformMapKey(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"slash", args{"kubernetes/foo"}, `"kubernetes/foo"`},
+		{"dot", args{"kubernetes.io"}, `"kubernetes.io"`},
+		{"no_change", args{"kubernetes"}, `kubernetes`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NormalizeTerraformMapKey(tt.args.s); got != tt.want {
+				t.Errorf("NormalizeTerraformMapKey() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -139,10 +139,10 @@ func ToTerraformResourceName(obj runtime.Object) string {
 // NormalizeTerraformMapKey converts Map keys to a form suitable for Terraform
 // HCL
 //
-// e.g. map keys that include certain characters ( '/' ) will be wrapped in
+// e.g. map keys that include certain characters ( '/', '.' ) will be wrapped in
 // double quotes.
 func NormalizeTerraformMapKey(s string) string {
-	if strings.Contains(s, "/") {
+	if strings.Contains(s, "/") || strings.Contains(s, ".") {
 		return fmt.Sprintf(`"%s"`, s)
 	}
 	return s
