@@ -56,16 +56,20 @@ func main() {
 	defer closer()
 
 	for i, obj := range objs {
-		f := hclwrite.NewEmptyFile()
-		err := WriteObject(obj, f.Body())
-		if err != nil {
-			log.Error().Int("obj#", i).Err(err).Msg("error writing object")
+		if IsKubernetesKindSupported(obj) {
+			f := hclwrite.NewEmptyFile()
+			err := WriteObject(obj, f.Body())
+			if err != nil {
+				log.Error().Int("obj#", i).Err(err).Msg("error writing object")
+			}
+
+			formatted := formatObject(f.Bytes())
+
+			fmt.Fprint(w, string(formatted))
+			fmt.Fprintln(w)
+		} else {
+			log.Warn().Str("kind", obj.GetObjectKind().GroupVersionKind().Kind).Msg("skipping API object, kind not supported by Terraform provider.")
 		}
-
-		formatted := formatObject(f.Bytes())
-
-		fmt.Fprint(w, string(formatted))
-		fmt.Fprintln(w)
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/runtime"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -20,6 +21,18 @@ func ResourceSchema(name string) *schema.Resource {
 	}
 
 	return nil
+}
+
+// IsKubernetesKindSupported returns true if a matching resource is found in the Terraform provider
+func IsKubernetesKindSupported(obj runtime.Object) bool {
+	name := ToTerraformResourceType(obj)
+
+	res := ResourceSchema(name)
+	if res != nil {
+		return true
+	}
+
+	return false
 }
 
 // IsAttributeSupported scans the Terraform resource to determine if the named
