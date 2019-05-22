@@ -89,7 +89,7 @@ func TestIsKubernetesKindSupported(t *testing.T) {
 		{"Pod", "", "v1", "pod", true},
 		{"PodDisruptionBudget_false", "policy", "v1beta1", "PodDisruptionBudget", false},
 		{"Deployment", "apps", "v1", "deployment", true},
-		{"Ingress_false", "extensions", "v1beta1", "ingress", false},
+		{"Ingress", "extensions", "v1beta1", "ingress", true},
 		{"ReplicaSet_false", "apps", "v1", "ReplicaSet", false},
 		{"Secret", "core", "v1", "Secret", true},
 		{"Service", "core", "v1", "Service", true},
