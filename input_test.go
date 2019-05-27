@@ -18,12 +18,12 @@ func Test_readFilesInput(t *testing.T) {
 		{
 			"test-fixtures",
 			"test-fixtures",
-			13,
+			14,
 		},
 		{
 			"test-fixtures/",
 			"test-fixtures/",
-			13,
+			14,
 		},
 		{
 			"test-fixtures/nested/server-clusterrole.yaml",
