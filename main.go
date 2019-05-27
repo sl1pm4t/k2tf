@@ -58,7 +58,7 @@ func main() {
 	for i, obj := range objs {
 		if IsKubernetesKindSupported(obj) {
 			f := hclwrite.NewEmptyFile()
-			err := WriteObject(obj, f.Body())
+			_, err := WriteObject(obj, f.Body())
 			if err != nil {
 				log.Error().Int("obj#", i).Err(err).Msg("error writing object")
 			}

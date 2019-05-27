@@ -19,14 +19,14 @@ import (
 )
 
 // WriteObject converts a Kubernetes runtime.Object to HCL
-func WriteObject(obj runtime.Object, dst *hclwrite.Body) error {
+func WriteObject(obj runtime.Object, dst *hclwrite.Body) (int, error) {
 	w, err := NewObjectWalker(obj, dst)
 	if err != nil {
-		return err
+		return w.warnCount, err
 	}
 	reflectwalk.Walk(obj, w)
 
-	return nil
+	return w.warnCount, nil
 }
 
 // ObjectWalker implements reflectwalk.Walker interfaces
@@ -63,6 +63,7 @@ type ObjectWalker struct {
 	// Slices of primitive values get rendered all at once when we enter the Slice so they don't need
 	// further processing for each element.
 	ignoreSliceElems bool
+	warnCount        int
 }
 
 // NewObjectWalker returns a new ObjectWalker object
@@ -200,19 +201,21 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 		w.dst.AppendBlock(current.hcl)
 
 	} else {
-		if !includeUnsupported && current.unsupported {
-			// don't append this block or child blocks
-			w.warn().
-				Str("attr", current.FullSchemaName()).
-				Str("field", current.FullFieldName()).
-				Msg("excluding attribute - not found in Terraform schema")
+		if current.hasValue {
+			if !includeUnsupported && current.unsupported {
+				// don't append this block or child blocks
+				w.warn().
+					//Str("attr", current.FullSchemaName()).
+					Str("field", current.FullFieldName()).
+					Msgf("excluding attribute [%s] not found in Terraform schema", current.FullSchemaName())
 
-		} else if current.hasValue {
-			// communicate back up the tree that we found a non-zero value
-			parent.hasValue = true
+			} else {
+				// communicate back up the tree that we found a non-zero value
+				parent.hasValue = true
 
-			if !current.inlined {
-				parent.AppendBlock(current.hcl)
+				if !current.inlined {
+					parent.AppendBlock(current.hcl)
+				}
 			}
 		}
 
@@ -574,6 +577,7 @@ func (w *ObjectWalker) debugf(format string, a ...interface{}) {
 }
 
 func (w *ObjectWalker) warn() *zerolog.Event {
+	w.warnCount++
 	return w.decorateEvent(log.Warn())
 }
 
