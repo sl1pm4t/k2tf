@@ -72,6 +72,11 @@ func TestWriteObject(t *testing.T) {
 			0,
 		},
 		{
+			"ingress",
+			"kubernetes_ingress",
+			0,
+		},
+		{
 			"namespace",
 			"kubernetes_namespace",
 			0,
@@ -177,7 +182,10 @@ func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
 	defer os.RemoveAll(tmpDir)
 
 	// Write the file
-	ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
+	err = ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
+	if err != nil {
+		t.Fatalf("test setup error: %v", err)
+	}
 
 	// use terraform to load config from tmp dir
 	cfg, err := config.LoadDir(tmpDir)
@@ -197,7 +205,7 @@ func testParseK8SYAML(t *testing.T, s string) runtime.Object {
 	r := strings.NewReader(s)
 	objs, err := parseK8SYAML(r)
 	if err != nil {
-		t.Error("testParseK8SYAML err: ", err)
+		t.Fatalf("test setup error, could not parse test YAML: %v", err)
 		return nil
 	}
 	return objs[0]
