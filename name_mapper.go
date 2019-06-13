@@ -24,6 +24,7 @@ func init() {
 	inflection.AddUncountable("data")
 	inflection.AddUncountable("metadata")
 	inflection.AddUncountable("items")
+	inflection.AddUncountable("tls")
 }
 
 // ToTerraformAttributeName takes the reflect.StructField data of a Kubernetes object attribute

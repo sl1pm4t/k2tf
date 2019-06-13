@@ -22,7 +22,7 @@ import (
 func WriteObject(obj runtime.Object, dst *hclwrite.Body) (int, error) {
 	w, err := NewObjectWalker(obj, dst)
 	if err != nil {
-		return w.warnCount, err
+		return 0, err
 	}
 	reflectwalk.Walk(obj, w)
 

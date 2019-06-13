@@ -1,0 +1,25 @@
+resource "kubernetes_ingress" "tls_example_ingress" {
+  metadata {
+    name = "tls-example-ingress"
+  }
+  spec {
+    rule {
+      host = "sslexample.foo.com"
+      http {
+        path {
+          path = "/"
+          backend {
+            service_name = "service1"
+            service_port = "80"
+          }
+        }
+      }
+    }
+    tls {
+        hosts = [
+            "sslexample.foo.com",
+        ]
+        secret_name = "testsecret-tls"
+    }
+  }
+}
