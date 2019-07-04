@@ -1,0 +1,20 @@
+resource "kubernetes_job" "pi" {
+  metadata {
+    name = "pi"
+  }
+  spec {
+    backoff_limit = 4
+    template {
+      metadata {
+      }
+      spec {
+        container {
+          name    = "pi"
+          image   = "perl"
+          command = ["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+        }
+        restart_policy = "Never"
+      }
+    }
+  }
+}

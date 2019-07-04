@@ -1,4 +1,4 @@
-package main
+package k8sparser
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-func parseK8SYAML(in io.Reader) ([]runtime.Object, error) {
+func ParseYAML(in io.Reader) ([]runtime.Object, error) {
 	var result error
 	objs := []runtime.Object{}
 
@@ -44,7 +44,7 @@ func parseK8SYAML(in io.Reader) ([]runtime.Object, error) {
 	return objs, result
 }
 
-func parseK8SJSON(doc []byte) (runtime.Object, error) {
+func ParseJSON(doc []byte) (runtime.Object, error) {
 	var result error
 
 	d := scheme.Codecs.UniversalDeserializer()

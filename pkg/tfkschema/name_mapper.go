@@ -1,13 +1,13 @@
-package main
+package tfkschema
 
 import (
 	"fmt"
+	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"os"
 	"reflect"
 	"strings"
 
 	"github.com/jinzhu/inflection"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/iancoleman/strcase"
@@ -37,7 +37,7 @@ func init() {
 func ToTerraformAttributeName(field *reflect.StructField, path string) string {
 	name := extractProtobufName(field)
 
-	return normalizeTerraformName(name, false, path)
+	return NormalizeTerraformName(name, false, path)
 }
 
 // ToTerraformSubBlockName takes the reflect.StructField data of a Kubernetes object attribute
@@ -50,7 +50,7 @@ func ToTerraformAttributeName(field *reflect.StructField, path string) string {
 func ToTerraformSubBlockName(field *reflect.StructField, path string) string {
 	name := extractProtobufName(field)
 
-	return normalizeTerraformName(name, true, path)
+	return NormalizeTerraformName(name, true, path)
 }
 
 // normalizeTerraformName converts the given string to snake case
@@ -58,7 +58,7 @@ func ToTerraformSubBlockName(field *reflect.StructField, path string) string {
 // s is the string to normalize
 // set toSingular to true to singularize the given word
 // path is the full schema path to the named element
-func normalizeTerraformName(s string, toSingular bool, path string) string {
+func NormalizeTerraformName(s string, toSingular bool, path string) string {
 	switch s {
 	case "DaemonSet":
 		return "daemonset"
@@ -71,6 +71,11 @@ func normalizeTerraformName(s string, toSingular bool, path string) string {
 	case "updateStrategy":
 		if !strings.Contains(path, "stateful") {
 			return "strategy"
+		}
+
+	case "limits":
+		if strings.Contains(path, "limit_range.spec") {
+			return "limit"
 		}
 	}
 
@@ -124,17 +129,17 @@ func extractProtobufName(field *reflect.StructField) string {
 // ToTerraformResourceType converts a Kubernetes API Object Type name to the
 // equivalent `terraform-provider-kubernetes` schema name.
 func ToTerraformResourceType(obj runtime.Object) string {
-	tmeta := typeMeta(obj)
+	tmeta := k8sutils.TypeMeta(obj)
 
-	return "kubernetes_" + normalizeTerraformName(tmeta.Kind, false, "")
+	return "kubernetes_" + NormalizeTerraformName(tmeta.Kind, false, "")
 }
 
 // ToTerraformResourceName extract the Kubernetes API Objects' name from the
 // ObjectMeta
 func ToTerraformResourceName(obj runtime.Object) string {
-	meta := objectMeta(obj)
+	meta := k8sutils.ObjectMeta(obj)
 
-	return normalizeTerraformName(meta.Name, false, "")
+	return NormalizeTerraformName(meta.Name, false, "")
 }
 
 // NormalizeTerraformMapKey converts Map keys to a form suitable for Terraform
@@ -147,28 +152,4 @@ func NormalizeTerraformMapKey(s string) string {
 		return fmt.Sprintf(`"%s"`, s)
 	}
 	return s
-}
-
-func objectMeta(obj runtime.Object) metav1.ObjectMeta {
-	v := reflect.ValueOf(obj)
-
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-
-	metaF := v.FieldByName("ObjectMeta")
-
-	return metaF.Interface().(metav1.ObjectMeta)
-}
-
-func typeMeta(obj runtime.Object) metav1.TypeMeta {
-	v := reflect.ValueOf(obj)
-
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-
-	metaF := v.FieldByName("TypeMeta")
-
-	return metaF.Interface().(metav1.TypeMeta)
 }

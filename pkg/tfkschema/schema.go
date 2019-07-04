@@ -1,4 +1,4 @@
-package main
+package tfkschema
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
 )
 
-var errAttrNotFound = fmt.Errorf("could not find attribute in resource schema")
+var ErrAttrNotFound = fmt.Errorf("could not find attribute in resource schema")
 
 // ResourceSchema returns the named Terraform Provider Resource schema
 // as defined in the `terraform-provider-kubernetes` package
@@ -37,18 +37,41 @@ func IsKubernetesKindSupported(obj runtime.Object) bool {
 
 // IsAttributeSupported scans the Terraform resource to determine if the named
 // attribute is supported by the Kubernetes provider.
-func IsAttributeSupported(attrName string) (bool, error) {
+func IsAttributeSupported(attrName string) bool {
 	attrParts := strings.Split(attrName, ".")
 	res := ResourceSchema(attrParts[0])
 	if res == nil {
-		return false, fmt.Errorf("could not find resource: %s", attrParts[0])
+		return false
 	}
 	schemaMap := res.Schema
 
-	return search(schemaMap, attrParts[1:])
+	attr := search(schemaMap, attrParts[1:])
+	if attr != nil {
+		return true
+	}
+	return false
 }
 
-func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
+// IsAttributeRequired scans the Terraform resource to determine if the named
+// attribute is required by the Kubernetes provider.
+func IsAttributeRequired(attrName string) bool {
+	attrParts := strings.Split(attrName, ".")
+	res := ResourceSchema(attrParts[0])
+	if res == nil {
+		return false
+	}
+	schemaMap := res.Schema
+
+	attr := search(schemaMap, attrParts[1:])
+	if attr != nil {
+		return attr.Required
+	}
+
+	return false
+}
+
+
+func search(m map[string]*schema.Schema, attrParts []string) *schema.Schema {
 	searchKey := attrParts[0]
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -58,7 +81,7 @@ func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
 	if v, ok := m[searchKey]; ok {
 		if len(attrParts) == 1 {
 			// we hit the bottom of our search and found the attribute
-			return true, nil
+			return v
 		}
 
 		if v.Elem != nil {
@@ -71,5 +94,5 @@ func search(m map[string]*schema.Schema, attrParts []string) (bool, error) {
 
 	}
 
-	return false, errAttrNotFound
+	return nil
 }

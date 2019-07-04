@@ -131,6 +131,7 @@ resource "kubernetes_deployment" "backend_api" {
         restart_policy                   = "Always"
         termination_grace_period_seconds = 30
         dns_policy                       = "ClusterFirst"
+        automount_service_account_token  = true
       }
     }
     strategy {

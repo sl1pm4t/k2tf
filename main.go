@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/hcl/printer"
 	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	flag "github.com/spf13/pflag"
 
 	"github.com/rs/zerolog/log"
@@ -56,7 +57,7 @@ func main() {
 	defer closer()
 
 	for i, obj := range objs {
-		if IsKubernetesKindSupported(obj) {
+		if tfkschema.IsKubernetesKindSupported(obj) {
 			f := hclwrite.NewEmptyFile()
 			_, err := WriteObject(obj, f.Body())
 			if err != nil {

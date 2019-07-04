@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"strings"
 
 	"github.com/hashicorp/hcl2/hclwrite"
@@ -57,7 +58,8 @@ func (b *hclBlock) AppendBlock(hcl *hclwrite.Block) {
 // - this hclBlock's hcl Body if this block is not inlined
 // - parent's HCL body if this block is "inlined"
 func (b *hclBlock) SetAttributeValue(name string, val cty.Value) {
-	if includeUnsupported || b.isSupportedAttribute(b.FullSchemaName()+"."+name) {
+
+	if includeUnsupported || tfkschema.IsAttributeSupported(b.FullSchemaName()+"."+name) {
 		if b.inlined {
 			// append to parent
 			b.parent.SetAttributeValue(name, val)
@@ -82,9 +84,12 @@ func (b *hclBlock) FullSchemaName() string {
 	return strings.TrimLeft(parentName+"."+b.name, ".")
 }
 
-func (b *hclBlock) isSupportedAttribute(name string) bool {
-	supported, _ := IsAttributeSupported(name)
-	return supported
+func (b *hclBlock) isSupportedAttribute() bool {
+	return tfkschema.IsAttributeSupported(b.FullSchemaName())
+}
+
+func (b *hclBlock) isRequired() bool {
+	return tfkschema.IsAttributeRequired(b.FullSchemaName())
 }
 
 func (b *hclBlock) FullFieldName() string {

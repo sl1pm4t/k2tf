@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
+	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"reflect"
 	"strconv"
 
@@ -201,11 +203,10 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 		w.dst.AppendBlock(current.hcl)
 
 	} else {
-		if current.hasValue {
+		if current.hasValue || current.isRequired() {
 			if !includeUnsupported && current.unsupported {
 				// don't append this block or child blocks
 				w.warn().
-					//Str("attr", current.FullSchemaName()).
 					Str("field", current.FullFieldName()).
 					Msgf("excluding attribute [%s] not found in Terraform schema", current.FullSchemaName())
 
@@ -270,7 +271,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		// e.g.
 		//   resource "kubernetes_pod" "name" { }
 		topLevelBlock := hclwrite.NewBlock("resource", []string{w.ResourceType(), w.ResourceName()})
-		w.openBlock(w.ResourceType(), typeMeta(w.RuntimeObject).Kind, topLevelBlock)
+		w.openBlock(w.ResourceType(), k8sutils.TypeMeta(w.RuntimeObject).Kind, topLevelBlock)
 		w.isTopLevel = false
 
 	} else {
@@ -286,7 +287,7 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 		}
 
 		// generate a block name
-		blockName := ToTerraformSubBlockName(field, w.currentBlock.FullSchemaName())
+		blockName := tfkschema.ToTerraformSubBlockName(field, w.currentBlock.FullSchemaName())
 		w.debugf("creating block [%s] for field [%s]", blockName, field.Name)
 		b := w.openBlock(blockName, field.Name, hclwrite.NewBlock(blockName, nil))
 
@@ -307,14 +308,11 @@ func (w *ObjectWalker) Struct(v reflect.Value) error {
 			return reflectwalk.SkipEntry
 		}
 
+		// flag inlined
 		b.inlined = IsInlineStruct(field)
 
-		var err error
-		supported, err := IsAttributeSupported(b.FullSchemaName())
-		if err != nil && err != errAttrNotFound {
-			w.warn().Str("error", err.Error()).Msg("error while validating attribute against schema")
-		}
-		b.unsupported = !supported
+		// check if block is supported by Terraform
+		b.unsupported = !tfkschema.IsAttributeSupported(b.FullSchemaName())
 	}
 
 	return nil
@@ -349,7 +347,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
-				ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
+				tfkschema.ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
 				w.convertCtyValue(v.Interface()),
 			)
 		}
@@ -360,7 +358,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 // Map is called everytime reflectwalk enters a Map
 // Golang maps become HCL sub-blocks
 func (w *ObjectWalker) Map(m reflect.Value) error {
-	blockName := ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
+	blockName := tfkschema.ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
 	w.openBlock(blockName, w.field().Name, hcl)
 
@@ -375,7 +373,7 @@ func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 	if !IsZero(v) {
 		w.currentBlock.hasValue = true
 		w.currentBlock.hcl.Body().SetAttributeValue(
-			NormalizeTerraformMapKey(k.String()),
+			tfkschema.NormalizeTerraformMapKey(k.String()),
 			w.convertCtyValue(v.Interface()),
 		)
 	}
@@ -446,7 +444,7 @@ func (w *ObjectWalker) Slice(v reflect.Value) error {
 			// primitive type
 			w.currentBlock.hasValue = true
 			w.currentBlock.hcl.Body().SetAttributeValue(
-				ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
+				tfkschema.ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
 				val,
 			)
 
@@ -592,7 +590,7 @@ func (w *ObjectWalker) decorateEvent(e *zerolog.Event) *zerolog.Event {
 // ResourceName returns the Terraform Resource name for the Kubernetes Object
 func (w *ObjectWalker) ResourceName() string {
 	if w.resourceName == "" {
-		w.resourceName = ToTerraformResourceName(w.RuntimeObject)
+		w.resourceName = tfkschema.ToTerraformResourceName(w.RuntimeObject)
 	}
 
 	return w.resourceName
@@ -601,7 +599,7 @@ func (w *ObjectWalker) ResourceName() string {
 // ResourceType returns the Terraform Resource type for the Kubernetes Object
 func (w *ObjectWalker) ResourceType() string {
 	if w.resourceType == "" {
-		w.resourceType = ToTerraformResourceType(w.RuntimeObject)
+		w.resourceType = tfkschema.ToTerraformResourceType(w.RuntimeObject)
 	}
 
 	return w.resourceType
