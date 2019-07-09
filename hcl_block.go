@@ -89,7 +89,15 @@ func (b *hclBlock) isSupportedAttribute() bool {
 }
 
 func (b *hclBlock) isRequired() bool {
-	return tfkschema.IsAttributeRequired(b.FullSchemaName())
+	required := tfkschema.IsAttributeRequired(b.FullSchemaName())
+
+	if required && !b.hasValue && !b.parent.isRequired() {
+		// If current attribute has no value, only flag as required if parent(s) are also required.
+		// This is to match how Terraform handles the Required flag of nested attributes.
+		required = false
+	}
+
+	return required
 }
 
 func (b *hclBlock) FullFieldName() string {

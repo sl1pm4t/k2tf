@@ -70,7 +70,6 @@ func IsAttributeRequired(attrName string) bool {
 	return false
 }
 
-
 func search(m map[string]*schema.Schema, attrParts []string) *schema.Schema {
 	searchKey := attrParts[0]
 	keys := make([]string, 0, len(m))
