@@ -149,7 +149,7 @@ func TestToTerraformSubBlockName(t *testing.T) {
 	}
 }
 
-func Test_normalizeTerraformName(t *testing.T) {
+func Test_NormalizeTerraformName(t *testing.T) {
 	type args struct {
 		s          string
 		toSingular bool
@@ -213,6 +213,15 @@ func Test_normalizeTerraformName(t *testing.T) {
 				"limit_range.spec.",
 			},
 			"limit",
+		},
+		{
+			"image_pull_secrets",
+			args{
+				"imagePullSecrets",
+				true,
+				"",
+			},
+			"image_pull_secrets",
 		},
 
 	}
