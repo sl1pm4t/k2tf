@@ -1,4 +1,4 @@
-package main
+package tfkschema
 
 import (
 	"reflect"
@@ -205,10 +205,20 @@ func Test_normalizeTerraformName(t *testing.T) {
 			},
 			"non_resource_urls",
 		},
+		{
+			"LimitRangeSpec.Limits",
+			args{
+				"limits",
+				true,
+				"limit_range.spec.",
+			},
+			"limit",
+		},
+
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := normalizeTerraformName(tt.args.s, tt.args.toSingular, tt.args.path); got != tt.want {
+			if got := NormalizeTerraformName(tt.args.s, tt.args.toSingular, tt.args.path); got != tt.want {
 				t.Errorf("normalizeTerraformName() = %v, want %v", got, tt.want)
 			}
 		})

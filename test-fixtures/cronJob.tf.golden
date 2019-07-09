@@ -1,0 +1,26 @@
+resource "kubernetes_cron_job" "hello" {
+  metadata {
+    name = "hello"
+  }
+  spec {
+    schedule = "*/1 * * * *"
+    job_template {
+      metadata {
+      }
+      spec {
+        template {
+          metadata {
+          }
+          spec {
+            container {
+              name  = "hello"
+              image = "busybox"
+              args  = ["/bin/sh", "-c", "date; echo Hello from the Kubernetes cluster"]
+            }
+            restart_policy = "OnFailure"
+          }
+        }
+      }
+    }
+  }
+}

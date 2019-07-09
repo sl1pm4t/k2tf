@@ -1,8 +1,9 @@
-package main
+package tfkschema
 
 import (
 	"fmt"
 	"github.com/iancoleman/strcase"
+	"github.com/sl1pm4t/k2tf/pkg/testutils"
 	"k8s.io/apimachinery/pkg/runtime"
 	"strings"
 	"testing"
@@ -58,14 +59,20 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 			false,
 			true,
 		},
+		{
+			"kubernetes_limit_range.spec.limits",
+			args{
+				"kubernetes_limit_range.spec.limit",
+			},
+			true,
+			false,
+		},
+
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := IsAttributeSupported(tt.args.attrName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("IsAttributeSupported() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := IsAttributeSupported(tt.args.attrName)
+
 			if got != tt.want {
 				t.Errorf("IsAttributeSupported() = %v, want %v", got, tt.want)
 			}
@@ -84,6 +91,7 @@ func TestIsKubernetesKindSupported(t *testing.T) {
 		{"ConfigMap", "core", "v1", "ConfigMap", true},
 		{"ClusterRole", "rbac.authorization.k8s.io", "v1", "ClusterRole", true},
 		{"ClusterRoleBinding", "rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", true},
+		{"CronJob", "batch", "v1beta1", "CronJob", true},
 		{"DaemonSet", "apps", "v1", "DaemonSet", true},
 		{"Namespace", "core", "v1", "Namespace", true},
 		{"Pod", "", "v1", "pod", true},
@@ -119,7 +127,7 @@ metadata:
   name: test-%s
 `, apiVersion, strcase.ToCamel(k), strings.ToLower(k))
 
-	obj := testParseK8SYAML(t, yaml)
+	obj := testutils.TestParseYAML(t, yaml)
 	if obj == nil {
 		t.Fatal("test setup error, runtime.Object is nil")
 	}

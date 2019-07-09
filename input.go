@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"github.com/sl1pm4t/k2tf/pkg/k8sparser"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -33,7 +34,7 @@ func readStdinInput() []runtime.Object {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	parsed, err := parseK8SYAML(reader)
+	parsed, err := k8sparser.ParseYAML(reader)
 	if err != nil {
 		log.Fatal().Err(err)
 	}
@@ -42,7 +43,7 @@ func readStdinInput() []runtime.Object {
 		if obj.GetObjectKind().GroupVersionKind().Kind == "List" {
 			list := obj.(*corev1.List)
 			for _, item := range list.Items {
-				itemObj, err := parseK8SJSON(item.Raw)
+				itemObj, err := k8sparser.ParseJSON(item.Raw)
 				if err != nil {
 					log.Error().Err(err)
 					continue
@@ -85,7 +86,7 @@ func readFilesInput() []runtime.Object {
 		}
 
 		r := bytes.NewReader(content)
-		obj, err := parseK8SYAML(r)
+		obj, err := k8sparser.ParseYAML(r)
 		if err != nil {
 			log.Fatal().Err(err)
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sl1pm4t/k2tf/pkg/testutils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var update bool
@@ -52,6 +52,11 @@ func TestWriteObject(t *testing.T) {
 			0,
 		},
 		{
+			"cronJob",
+			"kubernetes_cron_job",
+			0,
+		},
+		{
 			"daemonset",
 			"kubernetes_daemonset",
 			0,
@@ -74,6 +79,11 @@ func TestWriteObject(t *testing.T) {
 		{
 			"ingress",
 			"kubernetes_ingress",
+			0,
+		},
+		{
+			"job",
+			"kubernetes_job",
 			0,
 		},
 		{
@@ -117,7 +127,7 @@ func TestWriteObject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// Generate HCL from test data
-			obj := testParseK8SYAML(t, testLoadFile(t, "test-fixtures", tt.name+".yaml"))
+			obj := testutils.TestParseYAML(t, testLoadFile(t, "test-fixtures", tt.name+".yaml"))
 			hclFile := hclwrite.NewEmptyFile()
 			warnCount, err := WriteObject(obj, hclFile.Body())
 			if err != nil {
@@ -199,14 +209,4 @@ func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
 
 	// extract our resources rawConfig
 	return cfg.Resources[0].RawConfig
-}
-
-func testParseK8SYAML(t *testing.T, s string) runtime.Object {
-	r := strings.NewReader(s)
-	objs, err := parseK8SYAML(r)
-	if err != nil {
-		t.Fatalf("test setup error, could not parse test YAML: %v", err)
-		return nil
-	}
-	return objs[0]
 }
