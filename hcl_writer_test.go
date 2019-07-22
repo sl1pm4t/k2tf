@@ -99,7 +99,7 @@ func TestWriteObject(t *testing.T) {
 		{
 			"podNodeExporter",
 			"kubernetes_pod",
-			4,
+			0,
 		},
 		{
 			"role",
