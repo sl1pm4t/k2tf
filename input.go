@@ -3,11 +3,12 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"github.com/sl1pm4t/k2tf/pkg/k8sparser"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/sl1pm4t/k2tf/pkg/k8sparser"
 
 	"github.com/rs/zerolog/log"
 	corev1 "k8s.io/api/core/v1"
@@ -35,8 +36,9 @@ func readStdinInput() []runtime.Object {
 
 	reader := bufio.NewReader(os.Stdin)
 	parsed, err := k8sparser.ParseYAML(reader)
+
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("Could not parse stdin")
 	}
 
 	for _, obj := range parsed {
@@ -70,25 +72,25 @@ func readFilesInput() []runtime.Object {
 
 	file, err := os.Open(input)
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 
 	fs, err := file.Stat()
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("")
 	}
 
 	readFile := func(fileName string) {
 		log.Debug().Msgf("reading file: %s", fileName)
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 
 		r := bytes.NewReader(content)
 		obj, err := k8sparser.ParseYAML(r)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 		objs = append(objs, obj...)
 	}
@@ -99,7 +101,7 @@ func readFilesInput() []runtime.Object {
 
 		dirContents, err := file.Readdirnames(0)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 
 		for _, f := range dirContents {
