@@ -26,13 +26,13 @@ func setupOutput() (io.Writer, CloseFunc) {
 		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
 		w = f
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("")
 		}
 		log.Debug().Str("file", output).Msg("opened file")
 
 		closeFn = func() {
 			if err := f.Close(); err != nil {
-				log.Fatal().Err(err)
+				log.Fatal().Err(err).Msg("")
 			}
 			log.Debug().Str("file", output).Msg("closed output file")
 		}
