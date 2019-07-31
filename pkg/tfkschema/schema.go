@@ -23,6 +23,18 @@ func ResourceSchema(name string) *schema.Resource {
 	return nil
 }
 
+// ResourceField returns the Terraform schema object for the named resource field
+// attrName should be in the form <resource>.path.to.field
+func ResourceField(attrName string) *schema.Schema {
+	if res, attrParts, ok := processAttributeName(attrName); ok {
+		attr := search(res.Schema, attrParts)
+		if attr != nil {
+			return attr
+		}
+	}
+	return nil
+}
+
 // IsKubernetesKindSupported returns true if a matching resource is found in the Terraform provider
 func IsKubernetesKindSupported(obj runtime.Object) bool {
 	name := ToTerraformResourceType(obj)
@@ -38,16 +50,11 @@ func IsKubernetesKindSupported(obj runtime.Object) bool {
 // IsAttributeSupported scans the Terraform resource to determine if the named
 // attribute is supported by the Kubernetes provider.
 func IsAttributeSupported(attrName string) bool {
-	attrParts := strings.Split(attrName, ".")
-	res := ResourceSchema(attrParts[0])
-	if res == nil {
-		return false
-	}
-	schemaMap := res.Schema
-
-	attr := search(schemaMap, attrParts[1:])
-	if attr != nil {
-		return true
+	if res, attrParts, ok := processAttributeName(attrName); ok {
+		attr := search(res.Schema, attrParts)
+		if attr != nil {
+			return true
+		}
 	}
 	return false
 }
@@ -55,16 +62,13 @@ func IsAttributeSupported(attrName string) bool {
 // IsAttributeRequired scans the Terraform resource to determine if the named
 // attribute is required by the Kubernetes provider.
 func IsAttributeRequired(attrName string) bool {
-	attrParts := strings.Split(attrName, ".")
-	res := ResourceSchema(attrParts[0])
-	if res == nil {
-		return false
-	}
-	schemaMap := res.Schema
+	if res, attrParts, ok := processAttributeName(attrName); ok {
+		schemaMap := res.Schema
 
-	attr := search(schemaMap, attrParts[1:])
-	if attr != nil {
-		return attr.Required
+		attr := search(schemaMap, attrParts)
+		if attr != nil {
+			return attr.Required
+		}
 	}
 
 	return false
@@ -94,4 +98,17 @@ func search(m map[string]*schema.Schema, attrParts []string) *schema.Schema {
 	}
 
 	return nil
+}
+
+// processAttributeName (naming things is hard) is a convenience method that splits a
+// given resource attribute name, returning the identified Terraform resource (if any),
+// and a slice of the remaining attribute path elements.
+func processAttributeName(attr string) (*schema.Resource, []string, bool) {
+	attrParts := strings.Split(attr, ".")
+	res := ResourceSchema(attrParts[0])
+	if res == nil {
+		return nil, nil, false
+	}
+
+	return res, attrParts[1:], true
 }
