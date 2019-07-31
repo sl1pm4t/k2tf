@@ -1,20 +1,20 @@
 resource "kubernetes_stateful_set" "web" {
   metadata {
     name = "web"
-    labels {
+    labels = {
       app = "nginx"
     }
   }
   spec {
     replicas = 14
     selector {
-      match_labels {
+      match_labels = {
         app = "nginx"
       }
     }
     template {
       metadata {
-        labels {
+        labels = {
           app = "nginx"
         }
       }
@@ -40,7 +40,7 @@ resource "kubernetes_stateful_set" "web" {
       spec {
         access_modes = ["ReadWriteOnce"]
         resources {
-          requests {
+          requests = {
             storage = "1Gi"
           }
         }

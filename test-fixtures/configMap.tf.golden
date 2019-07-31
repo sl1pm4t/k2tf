@@ -2,12 +2,12 @@ resource "kubernetes_config_map" "foo_config_map" {
   metadata {
     name      = "foo-config-map"
     namespace = "bar"
-    labels {
+    labels = {
       lbl1 = "somevalue"
       lbl2 = "another"
     }
   }
-  data {
+  data = {
     item1 = "wow"
     item2 = "wee"
   }

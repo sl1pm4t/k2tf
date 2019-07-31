@@ -2,7 +2,7 @@ resource "kubernetes_endpoints" "backend" {
   metadata {
     name      = "backend"
     namespace = "default"
-    annotations {
+    annotations = {
       "alpha.istio.io/kubernetes-serviceaccounts" = "default"
     }
   }

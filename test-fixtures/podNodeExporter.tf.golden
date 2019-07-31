@@ -3,12 +3,12 @@ resource "kubernetes_pod" "node_exporter_7fth_7" {
     name          = "node-exporter-7fth7"
     generate_name = "node-exporter-"
     namespace     = "prometheus"
-    labels {
+    labels = {
       controller-revision-hash = "2418008739"
       name                     = "node-exporter"
       pod-template-generation  = "1"
     }
-    annotations {
+    annotations = {
       "prometheus.io/scrape" = "true"
       "prometheus.io/port"   = "9100"
       "prometheus.io/scheme" = "http"

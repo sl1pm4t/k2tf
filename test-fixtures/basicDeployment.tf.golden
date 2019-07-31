@@ -2,23 +2,23 @@ resource "kubernetes_deployment" "baz_app" {
   metadata {
     name      = "baz-app"
     namespace = "bat"
-    annotations {
+    annotations = {
       foo = "fam"
     }
   }
   spec {
     replicas = 2
     selector {
-      match_labels {
+      match_labels = {
         app = "nginx"
       }
     }
     template {
       metadata {
-        labels {
+        labels = {
           app = "nginx"
         }
-        annotations {
+        annotations = {
           foo = "fam"
         }
       }

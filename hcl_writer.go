@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"reflect"
@@ -214,7 +215,10 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 				// communicate back up the tree that we found a non-zero value
 				parent.hasValue = true
 
-				if !current.inlined {
+				if current.isMap {
+					parent.SetAttributeValue(current.name, cty.MapVal(current.hclMap))
+
+				} else  if !current.inlined {
 					parent.AppendBlock(current.hcl)
 				}
 			}
@@ -342,7 +346,7 @@ func (w *ObjectWalker) StructField(field reflect.StructField, v reflect.Value) e
 // If it's not a zero value, add an Attribute to the current HCL Block.
 func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
-		w.debug(fmt.Sprintf("%s = %v (%T)", w.field().Name, v.Interface(), v.Interface()))
+		w.debug(fmt.Sprintf("Primitive: %s = %v (%T)", w.field().Name, v.Interface(), v.Interface()))
 
 		if !IsZero(v) {
 			w.currentBlock.hasValue = true
@@ -356,24 +360,32 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 }
 
 // Map is called everytime reflectwalk enters a Map
-// Golang maps become HCL sub-blocks
+// Golang maps are usally output as HCL maps, but sometimes as sub-blocks.
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := tfkschema.ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
-	w.openBlock(blockName, w.field().Name, hcl)
+	b := w.openBlock(blockName, w.field().Name, hcl)
+
+	// If this field is also typed as Map in the Terraform schema, flag the block appropriately.
+	// This will impact whether the block is rendered as a map or HCL sub-block.
+	schemaElem := tfkschema.ResourceField(w.currentBlock.FullSchemaName())
+	if schemaElem != nil && schemaElem.Type == schema.TypeMap {
+		b.isMap = true
+		b.hclMap = map[string]cty.Value{}
+	}
 
 	return nil
 }
 
-// MapElem is called everytime reflectwalk enters a Map element
+// MapElem is called every time reflectwalk enters a Map element
 //  normalize the element key, and write element value to the HCL block as an attribute value
 func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
-	w.debug(fmt.Sprintf("    %s = %v (%T)", k, v.Interface(), v.Interface()))
+	w.debug(fmt.Sprintf("MapElem: %s = %v (%T)", k, v.Interface(), v.Interface()))
 
 	if !IsZero(v) {
 		w.currentBlock.hasValue = true
-		w.currentBlock.hcl.Body().SetAttributeValue(
-			tfkschema.NormalizeTerraformMapKey(k.String()),
+		w.currentBlock.SetAttributeValue(
+			k.String(),
 			w.convertCtyValue(v.Interface()),
 		)
 	}

@@ -1,7 +1,7 @@
 resource "kubernetes_service" "nginx" {
   metadata {
     name = "nginx"
-    labels {
+    labels = {
       app = "nginx"
     }
   }

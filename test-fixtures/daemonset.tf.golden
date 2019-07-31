@@ -2,19 +2,19 @@ resource "kubernetes_daemonset" "terraform_example" {
   metadata {
     name      = "terraform-example"
     namespace = "something"
-    labels {
+    labels = {
       test = "MyExampleApp"
     }
   }
   spec {
     selector {
-      match_labels {
+      match_labels = {
         test = "MyExampleApp"
       }
     }
     template {
       metadata {
-        labels {
+        labels = {
           test = "MyExampleApp"
         }
       }
