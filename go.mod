@@ -22,3 +22,5 @@ require (
 )
 
 go 1.13
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
