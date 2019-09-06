@@ -88,6 +88,7 @@ func TestIsKubernetesKindSupported(t *testing.T) {
 		k string
 		want bool
 	}{
+		{"APIService", "apiregistration.k8s.io", "v1beta1", "APIService", true},
 		{"ConfigMap", "core", "v1", "ConfigMap", true},
 		{"ClusterRole", "rbac.authorization.k8s.io", "v1", "ClusterRole", true},
 		{"ClusterRoleBinding", "rbac.authorization.k8s.io", "v1", "ClusterRoleBinding", true},
