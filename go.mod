@@ -13,9 +13,14 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
 	github.com/terraform-providers/terraform-provider-aws v1.58.0 // indirect
-	github.com/terraform-providers/terraform-provider-kubernetes v1.8.1
+	github.com/terraform-providers/terraform-provider-kubernetes v1.9.0
 	github.com/zclconf/go-cty v1.0.1-0.20190708163926-19588f92a98f
-	k8s.io/api v0.0.0-20190111032252-67edc246be36
-	k8s.io/apimachinery v0.0.0-20190210215030-4521e64aecd3
+	k8s.io/api v0.0.0-20190222213804-5cb15d344471
+	k8s.io/apimachinery v0.0.0-20190221213512-86fb29eff628
 	k8s.io/client-go v10.0.0+incompatible
+	k8s.io/kube-aggregator v0.0.0-20190508191239-c5c2b08eec9f
 )
+
+go 1.13
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0

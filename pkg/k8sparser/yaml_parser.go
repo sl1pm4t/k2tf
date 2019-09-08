@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes/scheme"
+	aggregator_scheme "k8s.io/kube-aggregator/pkg/apiserver/scheme"
 )
 
 func ParseYAML(in io.Reader) ([]runtime.Object, error) {
@@ -28,12 +29,25 @@ func ParseYAML(in io.Reader) ([]runtime.Object, error) {
 			log.Error().Err(err)
 			result = multierror.Append(result, err)
 		}
+
+		// First try main decoder
 		d := scheme.Codecs.UniversalDeserializer()
 		obj, _, err := d.Decode(doc, nil, nil)
 		if err != nil {
 			log.Error().Err(err)
-			wrapped := fmt.Errorf("could not decode yaml object #%d: %s", i, err)
-			result = multierror.Append(result, wrapped)
+			wrapped := fmt.Errorf("could not decode yaml object with main scheme #%d: %s", i, err)
+
+			// Fallback on aggregator decoder
+			d = aggregator_scheme.Codecs.UniversalDeserializer()
+			obj, _, err = d.Decode(doc, nil, nil)
+			if err != nil {
+				log.Error().Err(err)
+
+				// Push both errors
+				result = multierror.Append(result, wrapped)
+				wrapped = fmt.Errorf("could not decode yaml object with aggregator scheme #%d: %s", i, err)
+				result = multierror.Append(result, wrapped)
+			}
 		}
 
 		if obj != nil {
