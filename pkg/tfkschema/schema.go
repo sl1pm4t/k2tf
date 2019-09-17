@@ -75,26 +75,28 @@ func IsAttributeRequired(attrName string) bool {
 }
 
 func search(m map[string]*schema.Schema, attrParts []string) *schema.Schema {
-	searchKey := attrParts[0]
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-
-	if v, ok := m[searchKey]; ok {
-		if len(attrParts) == 1 {
-			// we hit the bottom of our search and found the attribute
-			return v
+	if len(attrParts) > 0 {
+		searchKey := attrParts[0]
+		keys := make([]string, 0, len(m))
+		for k := range m {
+			keys = append(keys, k)
 		}
 
-		if v.Elem != nil {
-			switch v.Elem.(type) {
-			case *schema.Resource:
-				res := v.Elem.(*schema.Resource)
-				return search(res.Schema, attrParts[1:])
+		if v, ok := m[searchKey]; ok {
+			if len(attrParts) == 1 {
+				// we hit the bottom of our search and found the attribute
+				return v
 			}
-		}
 
+			if v.Elem != nil {
+				switch v.Elem.(type) {
+				case *schema.Resource:
+					res := v.Elem.(*schema.Resource)
+					return search(res.Schema, attrParts[1:])
+				}
+			}
+
+		}
 	}
 
 	return nil
