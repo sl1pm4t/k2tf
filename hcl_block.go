@@ -53,8 +53,8 @@ type hclBlock struct {
 	// However, there are some cases where a Golang map on the Kubernetes object side is not defined
 	// as schema.TypeMap on the Terraform side (e.g. Container.Limits) so isMap is used to track how this block
 	// should be outputted.
-	isMap       bool
-	hclMap      map[string]cty.Value
+	isMap  bool
+	hclMap map[string]cty.Value
 }
 
 // A child block is adding a sub-block, write HCL to:
@@ -112,6 +112,11 @@ func (b *hclBlock) isSupportedAttribute() bool {
 }
 
 func (b *hclBlock) isRequired() bool {
+	if b.parent == nil {
+		// top level resource block is always required.
+		return true
+	}
+
 	required := tfkschema.IsAttributeRequired(b.FullSchemaName())
 
 	if required && !b.hasValue && !b.parent.isRequired() {

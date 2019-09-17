@@ -37,8 +37,8 @@ func testLoadFile(t *testing.T, fileparts ...string) string {
 
 func TestWriteObject(t *testing.T) {
 	tests := []struct {
-		name         string
-		resourceType string
+		name            string
+		resourceType    string
 		wantedWarnCount int
 	}{
 		{
@@ -95,6 +95,11 @@ func TestWriteObject(t *testing.T) {
 			"namespace_w_spec",
 			"kubernetes_namespace",
 			1,
+		},
+		{
+			"networkPolicy",
+			"kubernetes_network_policy",
+			0,
 		},
 		{
 			"podNodeExporter",
