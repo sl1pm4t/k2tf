@@ -10,5 +10,6 @@ spec:
     - port: 80
       name: web
   clusterIP: None
+  externalIPs: ["192.168.10.2"]
   selector:
     app: nginx

@@ -53,6 +53,17 @@ func TestToTerraformAttributeName(t *testing.T) {
 			},
 			"non_resource_urls",
 		},
+		{
+			"external_ips",
+			args{
+				&reflect.StructField{
+					Name: "ExternalIPs",
+					Tag:  `json:"externalIPs,omitempty" protobuf:"bytes,1,rep,name=externalIPs"`,
+				},
+				"kubernetes_service.spec",
+			},
+			"external_ips",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
