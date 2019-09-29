@@ -83,6 +83,11 @@ func NormalizeTerraformName(s string, toSingular bool, path string) string {
 		if strings.Contains(path, "kubernetes_network_policy.spec") {
 			return "ports"
 		}
+
+	case "externalIPs":
+		if strings.Contains(path, "kubernetes_service.spec") {
+			return "external_ips"
+		}
 	}
 
 	if toSingular {

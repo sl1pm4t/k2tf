@@ -14,5 +14,7 @@ resource "kubernetes_service" "nginx" {
       app = "nginx"
     }
     cluster_ip = "None"
+
+    external_ips = ["192.168.10.2"]
   }
 }
