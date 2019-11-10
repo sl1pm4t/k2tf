@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	flag "github.com/spf13/pflag"
+	"os"
 
 	"github.com/rs/zerolog/log"
 )
@@ -25,7 +26,8 @@ var (
 	includeUnsupported bool
 	noColor            bool
 	overwriteExisting  bool
-	tf12format bool
+	tf12format         bool
+	printVersion       bool
 )
 
 func init() {
@@ -36,6 +38,7 @@ func init() {
 	flag.StringVarP(&output, "output", "o", "-", `file or directory where Terraform config will be written`)
 	flag.BoolVarP(&includeUnsupported, "include-unsupported", "I", false, `set to true to include unsupported Attributes / Blocks in the generated TF config`)
 	flag.BoolVarP(&tf12format, "tf12format", "F", false, `Use Terraform 0.12 formatter`)
+	flag.BoolVarP(&printVersion, "version", "v", false, `Print k2tf version`)
 
 	flag.Parse()
 
@@ -43,6 +46,11 @@ func init() {
 }
 
 func main() {
+	if printVersion {
+		fmt.Printf("k2tf version: %s\n", version)
+		os.Exit(0)
+	}
+
 	log.Debug().
 		Str("version", version).
 		Str("commit", commit).
@@ -74,7 +82,7 @@ func main() {
 	}
 }
 
-func formatObject(in []byte) ([]byte) {
+func formatObject(in []byte) []byte {
 	var result []byte
 	var err error
 
