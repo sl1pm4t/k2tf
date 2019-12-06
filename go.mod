@@ -12,7 +12,6 @@ require (
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
-	github.com/terraform-providers/terraform-provider-aws v1.58.0 // indirect
 	github.com/terraform-providers/terraform-provider-kubernetes v1.9.0
 	github.com/zclconf/go-cty v1.0.1-0.20190708163926-19588f92a98f
 	k8s.io/api v0.0.0-20190222213804-5cb15d344471
