@@ -8,18 +8,18 @@ steps:
       - git fetch --tags
 
   - name: test
-    image: golang:1.12
+    image: golang:1.13
     volumes:
       - name: cache
         path: /go/pkg
     commands:
       - go mod download
       # Fail if git state is dirty after download modules
-      - git diff --quiet
+#      - git diff --quiet
       - make test
 
   - name: build
-    image: golang:1.12
+    image: golang:1.13
     volumes:
         - name: cache
           path: /go/pkg
@@ -27,7 +27,7 @@ steps:
       - make build
 
   - name: release
-    image: golang:1.12
+    image: golang:1.13
     commands:
       - "curl -sL https://git.io/goreleaser | bash"
     environment:
