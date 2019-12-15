@@ -1,0 +1,21 @@
+resource "kubernetes_pod_disruption_budget" "test" {
+  metadata {
+    annotations = {
+      TestAnnotationOne = "one"
+    }
+    labels = {
+      TestLabelOne   = "one"
+      TestLabelThree = "three"
+      TestLabelFour  = "four"
+    }
+    name = "test"
+  }
+  spec {
+    max_unavailable = 1
+    selector {
+      match_labels = {
+        foo = "bar"
+      }
+    }
+  }
+}
