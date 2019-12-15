@@ -1,22 +1,16 @@
 resource "kubernetes_stateful_set" "web" {
   metadata {
-    name = "web"
-    labels = {
-      app = "nginx"
-    }
+    name   = "web"
+    labels = { app = "nginx" }
   }
   spec {
     replicas = 14
     selector {
-      match_labels = {
-        app = "nginx"
-      }
+      match_labels = { app = "nginx" }
     }
     template {
       metadata {
-        labels = {
-          app = "nginx"
-        }
+        labels = { app = "nginx" }
       }
       spec {
         container {
@@ -40,9 +34,7 @@ resource "kubernetes_stateful_set" "web" {
       spec {
         access_modes = ["ReadWriteOnce"]
         resources {
-          requests = {
-            storage = "1Gi"
-          }
+          requests = { storage = "1Gi" }
         }
         storage_class_name = "thin-disk"
       }
