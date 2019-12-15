@@ -1,9 +1,9 @@
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: zk-pdb
+  name: test
 spec:
-  minAvailable: 2
+  minAvailable: 75%
   selector:
     matchLabels:
       app: zookeeper

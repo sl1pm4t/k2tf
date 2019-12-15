@@ -1,19 +1,16 @@
 package main
 
 import (
-	"github.com/sl1pm4t/k2tf/pkg/testutils"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/sl1pm4t/k2tf/pkg/testutils"
+
 	"github.com/hashicorp/hcl2/hclwrite"
-	"github.com/hashicorp/terraform/config"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
 )
 
 var update bool
@@ -102,6 +99,11 @@ func TestWriteObject(t *testing.T) {
 			0,
 		},
 		{
+			"podDisruptionBudget",
+			"kubernetes_pod_disruption_budget",
+			0,
+		},
+		{
 			"podNodeExporter",
 			"kubernetes_pod",
 			0,
@@ -147,71 +149,10 @@ func TestWriteObject(t *testing.T) {
 			expected := testLoadFile(t, goldenFile)
 
 			// Validate configs are equal
-			expectedConfig := parseResourceHCL(t, []byte(expected))
-			actualConfig := parseResourceHCL(t, hclFile.Bytes())
-			assert.Equal(t,
-				expectedConfig,
-				actualConfig,
-				"resource config should be equal",
-			)
-
-			// Validate the generated config is TF schema compliant
-			assert.True(
-				t,
-				validateTerraformConfig(t, tt.resourceType, actualConfig),
-				"HCL should pass provider validation",
-			)
+			assert.Equal(t, expected, string(hclFile.Bytes()), "should be equal")
 
 			// Validate warning count
 			assert.Equal(t, tt.wantedWarnCount, warnCount, "conversion warning count should match")
 		})
 	}
-}
-
-func validateTerraformConfig(t *testing.T, resourceType string, cfg *config.RawConfig) bool {
-	// extract our resources rawConfig
-	rsrcConfig := terraform.NewResourceConfig(cfg)
-
-	// validate against the Kubernetes provider
-	prov := kubernetes.Provider().(*schema.Provider)
-	_, errs := prov.ValidateResource(resourceType, rsrcConfig)
-
-	if len(errs) > 0 {
-		// log validation errors
-		for i, v := range errs {
-			t.Fatalf("Validation Error: %d> %v\n", i, v)
-		}
-
-		return false
-	}
-
-	return true
-}
-
-func parseResourceHCL(t *testing.T, hcl []byte) *config.RawConfig {
-	// write HCL to temp location where Terraform can load it
-	tmpDir, err := ioutil.TempDir("", "k2tf")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// Write the file
-	err = ioutil.WriteFile(filepath.Join(tmpDir, "hcl.tf"), hcl, os.ModePerm)
-	if err != nil {
-		t.Fatalf("test setup error: %v", err)
-	}
-
-	// use terraform to load config from tmp dir
-	cfg, err := config.LoadDir(tmpDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(cfg.Resources) == 0 {
-		t.Fatal("HCL config load did not return a resource config")
-	}
-
-	// extract our resources rawConfig
-	return cfg.Resources[0].RawConfig
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"reflect"
@@ -218,7 +218,7 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 				if current.isMap {
 					parent.SetAttributeValue(current.name, cty.MapVal(current.hclMap))
 
-				} else  if !current.inlined {
+				} else if !current.inlined {
 					parent.AppendBlock(current.hcl)
 				}
 			}

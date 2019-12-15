@@ -67,7 +67,6 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 			true,
 			false,
 		},
-
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -83,9 +82,9 @@ func TestSchemaSupportsAttribute(t *testing.T) {
 func TestIsKubernetesKindSupported(t *testing.T) {
 	tests := []struct {
 		name string
-		g string
-		v string
-		k string
+		g    string
+		v    string
+		k    string
 		want bool
 	}{
 		{"APIService", "apiregistration.k8s.io", "v1beta1", "APIService", true},
@@ -96,7 +95,7 @@ func TestIsKubernetesKindSupported(t *testing.T) {
 		{"DaemonSet", "apps", "v1", "DaemonSet", true},
 		{"Namespace", "core", "v1", "Namespace", true},
 		{"Pod", "", "v1", "pod", true},
-		{"PodDisruptionBudget_false", "policy", "v1beta1", "PodDisruptionBudget", false},
+		{"PodDisruptionBudget", "policy", "v1beta1", "PodDisruptionBudget", true},
 		{"Deployment", "apps", "v1", "deployment", true},
 		{"Ingress", "extensions", "v1beta1", "ingress", true},
 		{"ReplicaSet_false", "apps", "v1", "ReplicaSet", false},
