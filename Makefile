@@ -9,15 +9,15 @@ test:
 	go test -v ./...
 
 dockerbuild:
-	docker run --rm -it -v `pwd`:/workspace -w /workspace golang:1.12 go build -v
+	docker run --rm -it -v `pwd`:/workspace -w /workspace golang:1.13 go build -v
 
 dockertest:
-	docker run --rm -it -v `pwd`:/workspace -w /workspace golang:1.12 go test -v ./...
+	docker run --rm -it -v `pwd`:/workspace -w /workspace golang:1.13 go test -v ./...
 
 release:
-	docker run --rm -it -v `pwd`:/workspace -w /workspace -e GITHUB_TOKEN golang:1.12 /workspace/scripts/release.sh
+	docker run --rm -it -v `pwd`:/workspace -w /workspace -e GITHUB_TOKEN golang:1.13 /workspace/scripts/release.sh
 
 snapshot:
-	docker run --rm -it -v `pwd`:/workspace -w /workspace -e GITHUB_TOKEN golang:1.12 /workspace/scripts/release.sh --snapshot
+	docker run --rm -it -v `pwd`:/workspace -w /workspace -e GITHUB_TOKEN golang:1.13 /workspace/scripts/release.sh --snapshot
 
 .PHONY: build test changelog targets $(TARGETS)

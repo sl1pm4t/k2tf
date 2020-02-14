@@ -1,6 +1,6 @@
 module github.com/sl1pm4t/k2tf
 
-go 1.12
+go 1.13
 
 require (
 	cloud.google.com/go v0.49.0 // indirect
@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20190821123243-0c888d1241f6
 	github.com/hashicorp/terraform v0.12.18
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
-	github.com/hashicorp/terraform-plugin-sdk v1.4.0
+	github.com/hashicorp/terraform-plugin-sdk v1.4.1
 	github.com/hashicorp/terraform-svchost v0.0.0-20191119180714-d2e4933b9136 // indirect
 	github.com/hashicorp/yamux v0.0.0-20190923154419-df201c70410d // indirect
 	github.com/iancoleman/strcase v0.0.0-20180726023541-3605ed457bf7
@@ -33,7 +33,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
-	github.com/terraform-providers/terraform-provider-kubernetes v1.10.0
+	github.com/terraform-providers/terraform-provider-kubernetes v1.11.0
 	github.com/zclconf/go-cty v1.1.1
 	go.opencensus.io v0.22.2 // indirect
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect

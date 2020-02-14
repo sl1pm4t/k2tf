@@ -420,6 +420,8 @@ github.com/hashicorp/terraform-plugin-sdk v1.3.0 h1:leoaxwa8dUs7v11SX4xe33AZOwcb
 github.com/hashicorp/terraform-plugin-sdk v1.3.0/go.mod h1:fY7uWsWuLHi/hsGmBC2Sm7lic5RlFFjcM4zwua5VDuk=
 github.com/hashicorp/terraform-plugin-sdk v1.4.0 h1:b1LluARpES0Gq78oF4a9of3eS0iXM5JTwlt604vGvBY=
 github.com/hashicorp/terraform-plugin-sdk v1.4.0/go.mod h1:H5QLx/uhwfxBZ59Bc5SqT19M4i+fYt7LZjHTpbLZiAg=
+github.com/hashicorp/terraform-plugin-sdk v1.4.1 h1:REgN6WbySD6aIYdF6Uob3ic4eQkfh4NXSWU/casmgb4=
+github.com/hashicorp/terraform-plugin-sdk v1.4.1/go.mod h1:H5QLx/uhwfxBZ59Bc5SqT19M4i+fYt7LZjHTpbLZiAg=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596 h1:hjyO2JsNZUKT1ym+FAdlBEkGPevazYsmVgIMw7dVELg=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596/go.mod h1:kNDNcF7sN4DocDLBkQYz73HGKwN1ANB1blq4lIYLYvg=
 github.com/hashicorp/terraform-svchost v0.0.0-20191119180714-d2e4933b9136 h1:81Dg7SK6Q5vzqFItO8e1iIF2Nj8bLXV23NXjEgbev/s=
@@ -465,6 +467,7 @@ github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 h1:iQTw/8FWTuc7uia
 github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
 github.com/keybase/go-crypto v0.0.0-20161004153544-93f5b35093ba/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
 github.com/keybase/go-crypto v0.0.0-20181127160227-255a5089e85a/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
+github.com/keybase/go-crypto v0.0.0-20190416182011-b785b22cc757/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
 github.com/keybase/go-crypto v0.0.0-20190523171820-b785b22cc757/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
 github.com/keybase/go-crypto v0.0.0-20190828182435-a05457805304 h1:AW88I9vTHJ+AsVogb9d9YcTQuMel1SxvDKVhUgS5v/Q=
 github.com/keybase/go-crypto v0.0.0-20190828182435-a05457805304/go.mod h1:ghbZscTyKdM07+Fw3KSi0hcJm+AlEUWj8QLlPtijN/M=
@@ -704,6 +707,8 @@ github.com/terraform-providers/terraform-provider-google v2.17.0+incompatible h1
 github.com/terraform-providers/terraform-provider-google v2.17.0+incompatible/go.mod h1:cdfYuxcAyBAISVCiSYei5GIjhXbB3wth/feTmx8iD8A=
 github.com/terraform-providers/terraform-provider-kubernetes v1.10.0 h1:y70enSzel4C4mnSOs2Nqaqkkuj4LAFtsOG7RkeD/sUI=
 github.com/terraform-providers/terraform-provider-kubernetes v1.10.0/go.mod h1:inuMp5jwOV+HGtVDAquUig9fQg7qQMqoqr7nhMH1F3I=
+github.com/terraform-providers/terraform-provider-kubernetes v1.11.0 h1:0is5z9CNltKKzwaNShpzv6Yq6Oxc9gGWR2kIWUVonWU=
+github.com/terraform-providers/terraform-provider-kubernetes v1.11.0/go.mod h1:1Ajiv2F2VZEGOo2w/5h75l2QIZKMXBP0u9LAfLU0OFc=
 github.com/terraform-providers/terraform-provider-openstack v1.15.0 h1:adpjqej+F8BAX9dHmuPF47sUIkgifeqBu6p7iCsyj0Y=
 github.com/terraform-providers/terraform-provider-openstack v1.15.0/go.mod h1:2aQ6n/BtChAl1y2S60vebhyJyZXBsuAI5G4+lHrT1Ew=
 github.com/terraform-providers/terraform-provider-random v0.0.0-20190925200408-30dac3233094/go.mod h1:F4KE9YftuJyMiBth4W1kCrsyOHndtTjAmZ+ZzjqWY+4=
