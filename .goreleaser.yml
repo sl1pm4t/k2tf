@@ -10,7 +10,7 @@ builds:
       - windows
     goarch:
       - amd64
-archive:
+archives:
   replacements:
     darwin: Darwin
     linux: Linux
