@@ -66,14 +66,14 @@ resource "kubernetes_deployment" "backend_api" {
             success_threshold     = 1
             failure_threshold     = 3
           }
+          termination_message_path = "/dev/termination-log"
+          image_pull_policy        = "IfNotPresent"
           security_context {
             capabilities {
               add  = ["NET_BIND_SERVICE"]
               drop = ["ALL"]
             }
           }
-          termination_message_path = "/dev/termination-log"
-          image_pull_policy        = "IfNotPresent"
         }
         container {
           name    = "api"
