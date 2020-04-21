@@ -20,6 +20,14 @@ Download Binary from GitHub [releases](https://github.com/sl1pm4t/k2tf/releases/
 
 _See below_
 
+**Homebrew**
+
+```
+$ brew tap sl1pm4t/k2tf https://github.com/sl1pm4t/k2tf.git
+$ brew install k2tf
+```
+
+
 ## Example Usage
 
 **Convert a single YAML file and write generated Terraform config to Stdout**
