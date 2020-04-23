@@ -234,7 +234,15 @@ func Test_NormalizeTerraformName(t *testing.T) {
 			},
 			"image_pull_secrets",
 		},
-
+		{
+			"capabilities",
+			args{
+				"capabilities",
+				true,
+				"",
+			},
+			"capabilities",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
