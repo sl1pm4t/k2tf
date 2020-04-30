@@ -2,7 +2,7 @@ class K2tf < Formula
   desc "Kubernetes YAML to Terraform HCL converter"
   homepage "https://github.com/sl1pm4t/k2tf"
   url      "https://github.com/sl1pm4t/k2tf/archive/v0.4.1.tar.gz"
-  sha256   "d6070de2afc7bacf8a6ead24ad81b7d94f16e5106941ac78ced9b795ff4f8403"
+  sha256   "475478b3d8bb7b5af8201b3e512b78548875d93d88883bed1f52fc3e00bfac11"
   head     "https://github.com/sl1pm4t/k2tf.git"
 
   bottle :unneeded
