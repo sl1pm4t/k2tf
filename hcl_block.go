@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"strings"
+
+	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 
 	"github.com/hashicorp/hcl2/hclwrite"
 	log "github.com/sirupsen/logrus"
@@ -35,7 +36,7 @@ type hclBlock struct {
 	// See v1.Volume as an example
 	inlined bool
 
-	// inlined flags whether this block is supported in the Terraform Provider schema
+	// unsupported flags whether this block is supported in the Terraform Provider schema
 	// Unsupported blocks will be excluded from HCL rendering
 	unsupported bool
 

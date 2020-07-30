@@ -334,7 +334,7 @@ func (w *ObjectWalker) StructField(field reflect.StructField, v reflect.Value) e
 		w.debug(fmt.Sprint("skipping invalid ", field.Name))
 		return reflectwalk.SkipEntry
 
-	} else if ignoredField(field.Name) {
+	} else if k8sutils.IgnoredField(field.Name) {
 		w.debug(fmt.Sprint("ignoring ", field.Name))
 		return reflectwalk.SkipEntry
 
@@ -351,7 +351,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
 		w.debug(fmt.Sprintf("Primitive: %s = %v (%T)", w.field().Name, v.Interface(), v.Interface()))
 
-		if !IsZero(v) {
+		if !IsZero(v) || k8sutils.IncludedZeroValField(w.field().Name) {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
 				tfkschema.ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
@@ -532,31 +532,6 @@ func (w *ObjectWalker) convertCtyValue(val interface{}) cty.Value {
 		// last resort
 		return cty.StringVal(fmt.Sprintf("%s", val))
 	}
-}
-
-var ignoredFields = []string{
-	"CreationTimestamp",
-	"DeletionTimestamp",
-	"Generation",
-	"OwnerReferences",
-	"ResourceVersion",
-	"SelfLink",
-	"TypeMeta",
-	"Status",
-	"UID",
-}
-var ignoredFieldMap map[string]bool
-
-func init() {
-	ignoredFieldMap = make(map[string]bool, len(ignoredFields))
-	for _, v := range ignoredFields {
-		ignoredFieldMap[v] = true
-	}
-}
-
-func ignoredField(name string) bool {
-	_, ok := ignoredFieldMap[name]
-	return ok
 }
 
 func (w *ObjectWalker) log(s string, e *zerolog.Event) {

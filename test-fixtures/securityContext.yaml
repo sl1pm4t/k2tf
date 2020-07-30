@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: metricbeat
+  namespace: default
+  labels:
+    k8s-app: metricbeat
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: metricbeat
+    spec:
+      serviceAccountName: metricbeat
+      containers:
+        - name: metricbeat
+          image: docker.elastic.co/beats/metricbeat:7.0.0-alpha2
+          args: ["-c", "/etc/metricbeat.yml", "-e"]
+          env:
+            - name: ELASTICSEARCH_HOST
+              value: elastic-service
+          securityContext:
+            runAsUser: 0
