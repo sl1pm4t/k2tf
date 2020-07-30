@@ -30,7 +30,8 @@ resource "kubernetes_pod" "node_exporter_7fth_7" {
       termination_message_path = "/dev/termination-log"
       image_pull_policy        = "Always"
       security_context {
-        privileged = true
+        privileged  = true
+        run_as_user = 0
       }
     }
     restart_policy                   = "Always"

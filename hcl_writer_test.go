@@ -35,102 +35,86 @@ func testLoadFile(t *testing.T, fileparts ...string) string {
 func TestWriteObject(t *testing.T) {
 	tests := []struct {
 		name            string
-		resourceType    string
 		wantedWarnCount int
 	}{
 		{
 			"basicDeployment",
-			"kubernetes_deployment",
 			0,
 		},
 		{
 			"configMap",
-			"kubernetes_config_map",
 			0,
 		},
 		{
 			"cronJob",
-			"kubernetes_cron_job",
 			0,
 		},
 		{
 			"daemonset",
-			"kubernetes_daemonset",
 			0,
 		},
 		{
 			"deployment",
-			"kubernetes_deployment",
 			0,
 		},
 		{
 			"deployment2Containers",
-			"kubernetes_deployment",
 			0,
 		},
 		{
 			"endpoints",
-			"kubernetes_endpoints",
 			0,
 		},
 		{
 			"ingress",
-			"kubernetes_ingress",
 			0,
 		},
 		{
 			"job",
-			"kubernetes_job",
 			0,
 		},
 		{
 			"namespace",
-			"kubernetes_namespace",
 			0,
 		},
 		{
 			"namespace_w_spec",
-			"kubernetes_namespace",
 			1,
 		},
 		{
 			"networkPolicy",
-			"kubernetes_network_policy",
 			0,
 		},
 		{
 			"podDisruptionBudget",
-			"kubernetes_pod_disruption_budget",
 			0,
 		},
 		{
 			"podNodeExporter",
-			"kubernetes_pod",
 			0,
 		},
 		{
 			"role",
-			"kubernetes_role",
 			0,
 		},
 		{
 			"roleBinding",
-			"kubernetes_role_binding",
 			0,
 		},
 		{
 			"service",
-			"kubernetes_service",
 			0,
 		},
 		{
 			"statefulSet",
-			"kubernetes_stateful_set",
 			0,
 		},
 		{
 			"issue-48",
-			"kubernetes_replication_controller",
+			0,
+		},
+		{
+			"runAsUser",
 			0,
 		},
 	}
