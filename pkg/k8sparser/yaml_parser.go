@@ -35,7 +35,7 @@ func ParseYAML(in io.Reader) ([]runtime.Object, error) {
 		obj, _, err := d.Decode(doc, nil, nil)
 		if err != nil {
 			log.Error().Err(err)
-			wrapped := fmt.Errorf("could not decode yaml object with main scheme #%d: %s", i, err)
+			wrapped := fmt.Errorf("could not decode yaml object with main scheme #%d: %v", i, err)
 
 			// Fallback on aggregator decoder
 			d = aggregator_scheme.Codecs.UniversalDeserializer()
@@ -45,7 +45,7 @@ func ParseYAML(in io.Reader) ([]runtime.Object, error) {
 
 				// Push both errors
 				result = multierror.Append(result, wrapped)
-				wrapped = fmt.Errorf("could not decode yaml object with aggregator scheme #%d: %s", i, err)
+				wrapped = fmt.Errorf("could not decode yaml object with aggregator scheme #%d: %v", i, err)
 				result = multierror.Append(result, wrapped)
 			}
 		}

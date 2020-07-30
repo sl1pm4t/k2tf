@@ -1,0 +1,16 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: poddy
+  annotations:
+    foo: fam
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      args: ["--debug", "--test"]
+      ports:
+        - port: 80
+          containerPort: 80

@@ -84,13 +84,13 @@ func readFilesInput() []runtime.Object {
 		log.Debug().Msgf("reading file: %s", fileName)
 		content, err := ioutil.ReadFile(fileName)
 		if err != nil {
-			log.Fatal().Err(err).Msg("")
+			log.Fatal().Err(err).Msg("could not read file")
 		}
 
 		r := bytes.NewReader(content)
 		obj, err := k8sparser.ParseYAML(r)
 		if err != nil {
-			log.Fatal().Err(err).Msg("")
+			log.Warn().Err(err).Msg("could not parse file")
 		}
 		objs = append(objs, obj...)
 	}
