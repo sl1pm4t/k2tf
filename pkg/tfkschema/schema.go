@@ -2,11 +2,12 @@ package tfkschema
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/runtime"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-kubernetes/kubernetes"
+	"github.com/hashicorp/terraform-provider-kubernetes/kubernetes"
 )
 
 var ErrAttrNotFound = fmt.Errorf("could not find attribute in resource schema")

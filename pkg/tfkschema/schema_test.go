@@ -2,11 +2,12 @@ package tfkschema
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/iancoleman/strcase"
 	"github.com/sl1pm4t/k2tf/pkg/testutils"
 	"k8s.io/apimachinery/pkg/runtime"
-	"strings"
-	"testing"
 )
 
 func TestSchemaSupportsAttribute(t *testing.T) {
@@ -102,7 +103,7 @@ func TestIsKubernetesKindSupported(t *testing.T) {
 		{"Secret", "core", "v1", "Secret", true},
 		{"Service", "core", "v1", "Service", true},
 		{"Endpoints", "core", "v1", "endpoints", true},
-		{"ValidatingWebhookConfiguration_false", "admissionregistration.k8s.io", "v1beta1", "ValidatingWebhookConfiguration", false},
+		{"ValidatingWebhookConfiguration_false", "admissionregistration.k8s.io", "v1beta1", "ValidatingWebhookConfiguration", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

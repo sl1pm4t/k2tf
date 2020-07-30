@@ -112,11 +112,9 @@ spec:
             timeoutSeconds: 1
           resources:
             limits:
-              cpu: "2"
               memory: 8Gi
             requests:
               cpu: 300m
-              memory: 2Gi
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:

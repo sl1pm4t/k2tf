@@ -89,12 +89,10 @@ resource "kubernetes_deployment" "backend_api" {
           }
           resources {
             limits {
-              cpu    = "2"
               memory = "8Gi"
             }
             requests {
-              cpu    = "300m"
-              memory = "2Gi"
+              cpu = "300m"
             }
           }
           volume_mount {

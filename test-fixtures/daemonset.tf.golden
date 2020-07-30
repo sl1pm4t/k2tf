@@ -18,12 +18,10 @@ resource "kubernetes_daemonset" "terraform_example" {
           image = "nginx:1.7.8"
           resources {
             limits {
-              cpu    = "500m"
               memory = "512Mi"
             }
             requests {
-              cpu    = "250m"
-              memory = "50Mi"
+              cpu = "250m"
             }
           }
         }
