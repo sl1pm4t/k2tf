@@ -128,6 +128,11 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_stateful_set",
 			0,
 		},
+		{
+			"issue-48",
+			"kubernetes_replication_controller",
+			0,
+		},
 	}
 
 	for _, tt := range tests {

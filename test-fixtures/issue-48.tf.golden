@@ -1,0 +1,23 @@
+resource "kubernetes_replication_controller" "echoheaders" {
+  metadata {
+    name      = "echoheaders"
+    namespace = "platform"
+  }
+  spec {
+    replicas = 1
+    template {
+      metadata {
+        labels = { app = "echoheaders" }
+      }
+      spec {
+        container {
+          name  = "echoheaders"
+          image = "k8s.gcr.io/echoserver:1.10"
+          port {
+            container_port = 8080
+          }
+        }
+      }
+    }
+  }
+}

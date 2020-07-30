@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
-	"reflect"
-	"strconv"
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -216,7 +217,9 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 				parent.hasValue = true
 
 				if current.isMap {
-					parent.SetAttributeValue(current.name, cty.MapVal(current.hclMap))
+					if len(current.hclMap) > 0 {
+						parent.SetAttributeValue(current.name, cty.MapVal(current.hclMap))
+					}
 
 				} else if !current.inlined {
 					parent.AppendBlock(current.hcl)
