@@ -2,10 +2,11 @@ package tfkschema
 
 import (
 	"fmt"
-	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 
 	"github.com/jinzhu/inflection"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -95,6 +96,9 @@ func NormalizeTerraformName(s string, toSingular bool, path string) string {
 		s = inflection.Singular(s)
 	}
 	s = strcase.ToSnake(s)
+
+	// colons are not allowed by Terraform
+	s = strings.ReplaceAll(s, ":", "_")
 
 	return s
 }

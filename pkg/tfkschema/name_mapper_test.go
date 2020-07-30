@@ -243,6 +243,15 @@ func Test_NormalizeTerraformName(t *testing.T) {
 			},
 			"capabilities",
 		},
+		{
+			"metallb-system:speaker",
+			args{
+				"metallb-system:speaker",
+				true,
+				"",
+			},
+			"metallb_system_speaker",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
