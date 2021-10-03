@@ -1,15 +1,24 @@
 resource "kubernetes_service" "nginx" {
   metadata {
-    name   = "nginx"
-    labels = { app = "nginx" }
+    name = "nginx"
+
+    labels = {
+      app = "nginx"
+    }
   }
+
   spec {
     port {
       name = "web"
       port = 80
     }
-    selector     = { app = "nginx" }
+
+    selector = {
+      app = "nginx"
+    }
+
     cluster_ip   = "None"
     external_ips = ["192.168.10.2"]
   }
 }
+
