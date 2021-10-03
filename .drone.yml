@@ -8,7 +8,7 @@ steps:
       - git fetch --tags
 
   - name: test
-    image: golang:1.13
+    image: golang:1.17
     volumes:
       - name: cache
         path: /go/pkg
@@ -37,7 +37,7 @@ steps:
       - git fetch --tags
 
   - name: release
-    image: golang:1.13
+    image: golang:1.17
     commands:
       - "curl -sL https://git.io/goreleaser | bash"
     environment:
