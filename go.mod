@@ -22,11 +22,4 @@ require (
 	k8s.io/kube-aggregator v0.0.0-20191025230902-aa872b06629d
 )
 
-// Override invalid go-autorest pseudo-version. This can be removed once
-// all transitive dependencies on go-autorest use correct pseudo-versions.
-// See https://tip.golang.org/doc/go1.13#version-validation
-// and https://github.com/Azure/go-autorest/issues/481
-replace (
-	github.com/Azure/go-autorest v11.1.2+incompatible => github.com/Azure/go-autorest v12.1.0+incompatible
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20190918160344-1fbdaa4c8d90
-)
+replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190918160344-1fbdaa4c8d90
