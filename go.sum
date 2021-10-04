@@ -457,8 +457,8 @@ github.com/hashicorp/terraform-plugin-mux v0.2.0/go.mod h1:ZLiSpKrAtyqS7d3QydVIz
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0 h1:SuI59MqNjYDrL7EfqHX9V6P/24isgqYx/FdglwVs9bg=
 github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0/go.mod h1:grseeRo9g3yNkYW09iFlV8LG78jTa1ssBgouogQg/RU=
 github.com/hashicorp/terraform-plugin-test/v2 v2.2.1/go.mod h1:eZ9JL3O69Cb71Skn6OhHyj17sLmHRb+H6VrDcJjKrYU=
-github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210803163250-ae8bf149f4ee h1:Zbwz1hqMXC9kWXWPUAEqWmm1j1WvyveQ0hK7gT70PbE=
-github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210803163250-ae8bf149f4ee/go.mod h1:zRDCCn6IPM3FZc7foD7DzfzQV/3PMpr2Nh/OronT9rA=
+github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210914220147-d055fe24a82d h1:JYp8RMh2omS1Ae6Kquz/IlaAQSmMRypjHbKZQ4hBOYc=
+github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210914220147-d055fe24a82d/go.mod h1:zRDCCn6IPM3FZc7foD7DzfzQV/3PMpr2Nh/OronT9rA=
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hashicorp/yamux v0.0.0-20210316155119-a95892c5f864 h1:Y4V+SFe7d3iH+9pJCoeWIOS5/xBJIFsltS7E+KJSsJY=

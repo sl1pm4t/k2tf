@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20190821123243-0c888d1241f6
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
-	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210803163250-ae8bf149f4ee
+	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210914220147-d055fe24a82d
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/jinzhu/inflection v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.2
