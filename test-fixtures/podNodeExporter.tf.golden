@@ -27,8 +27,9 @@ resource "kubernetes_pod" "node_exporter_7fth_7" {
         read_only  = true
         mount_path = "/var/run/secrets/kubernetes.io/serviceaccount"
       }
-      termination_message_path = "/dev/termination-log"
-      image_pull_policy        = "Always"
+      termination_message_path   = "/dev/termination-log"
+      termination_message_policy = "File"
+      image_pull_policy          = "Always"
       security_context {
         privileged = true
       }

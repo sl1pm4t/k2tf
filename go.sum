@@ -316,6 +316,8 @@ github.com/hashicorp/terraform-plugin-test v1.2.0 h1:AWFdqyfnOj04sxTdaAF57QqvW7X
 github.com/hashicorp/terraform-plugin-test v1.2.0/go.mod h1:QIJHYz8j+xJtdtLrFTlzQVC0ocr3rf/OjIpgZLK56Hs=
 github.com/hashicorp/terraform-provider-kubernetes v1.12.0 h1:TTvcrALXlHDzMaNTDkMniQxVnTB9bFPRPtPWF4GOq2w=
 github.com/hashicorp/terraform-provider-kubernetes v1.12.0/go.mod h1:Jd8nPxR2IsjdpM19/lw4prw0qGaUIi6ll3fGsil/XIs=
+github.com/hashicorp/terraform-provider-kubernetes v1.13.0 h1:oKH2emOE0AHUzYDCpgBMaqBXxSaEdvyNIFXxw9c3Nvk=
+github.com/hashicorp/terraform-provider-kubernetes v1.13.0/go.mod h1:Jd8nPxR2IsjdpM19/lw4prw0qGaUIi6ll3fGsil/XIs=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596 h1:hjyO2JsNZUKT1ym+FAdlBEkGPevazYsmVgIMw7dVELg=
 github.com/hashicorp/terraform-svchost v0.0.0-20191011084731-65d371908596/go.mod h1:kNDNcF7sN4DocDLBkQYz73HGKwN1ANB1blq4lIYLYvg=
 github.com/hashicorp/vault v0.10.4/go.mod h1:KfSyffbKxoVyspOdlaGVjIuwLobi07qD1bAbosPMpP0=

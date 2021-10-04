@@ -133,6 +133,11 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_replication_controller",
 			0,
 		},
+		{
+			"certificateSigningRequest",
+			"kubernetes_certificate_signing_request",
+			0,
+		},
 	}
 
 	for _, tt := range tests {
