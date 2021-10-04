@@ -23,7 +23,6 @@ _See below_
 **Homebrew**
 
 ```
-$ brew tap sl1pm4t/k2tf https://github.com/sl1pm4t/k2tf.git
 $ brew install k2tf
 ```
 
