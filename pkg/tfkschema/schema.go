@@ -6,7 +6,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-kubernetes/kubernetes"
 )
 
@@ -15,7 +15,7 @@ var ErrAttrNotFound = fmt.Errorf("could not find attribute in resource schema")
 // ResourceSchema returns the named Terraform Provider Resource schema
 // as defined in the `terraform-provider-kubernetes` package
 func ResourceSchema(name string) *schema.Resource {
-	prov := kubernetes.Provider().(*schema.Provider)
+	prov := kubernetes.Provider()
 
 	if res, ok := prov.ResourcesMap[name]; ok {
 		return res

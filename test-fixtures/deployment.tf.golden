@@ -66,8 +66,9 @@ resource "kubernetes_deployment" "backend_api" {
             success_threshold     = 1
             failure_threshold     = 3
           }
-          termination_message_path = "/dev/termination-log"
-          image_pull_policy        = "IfNotPresent"
+          termination_message_path   = "/dev/termination-log"
+          termination_message_policy = "File"
+          image_pull_policy          = "IfNotPresent"
           security_context {
             capabilities {
               add  = ["NET_BIND_SERVICE"]
@@ -88,12 +89,8 @@ resource "kubernetes_deployment" "backend_api" {
             value = "bedba4b80a982b3116dfd56366de3c2d"
           }
           resources {
-            limits {
-              memory = "8Gi"
-            }
-            requests {
-              cpu = "300m"
-            }
+            limits   = { memory = "8Gi" }
+            requests = { cpu = "300m" }
           }
           volume_mount {
             name       = "backend-api-config"
@@ -119,8 +116,9 @@ resource "kubernetes_deployment" "backend_api" {
             success_threshold     = 1
             failure_threshold     = 3
           }
-          termination_message_path = "/dev/termination-log"
-          image_pull_policy        = "Always"
+          termination_message_path   = "/dev/termination-log"
+          termination_message_policy = "File"
+          image_pull_policy          = "Always"
         }
         restart_policy                   = "Always"
         termination_grace_period_seconds = 30

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sl1pm4t/k2tf/pkg/k8sutils"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 
