@@ -89,12 +89,8 @@ resource "kubernetes_deployment" "backend_api" {
             value = "bedba4b80a982b3116dfd56366de3c2d"
           }
           resources {
-            limits {
-              memory = "8Gi"
-            }
-            requests {
-              cpu = "300m"
-            }
+            limits   = { memory = "8Gi" }
+            requests = { cpu = "300m" }
           }
           volume_mount {
             name       = "backend-api-config"

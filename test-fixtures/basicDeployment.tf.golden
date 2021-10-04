@@ -23,12 +23,8 @@ resource "kubernetes_deployment" "baz_app" {
             container_port = 80
           }
           resources {
-            limits {
-              memory = "1Gi"
-            }
-            requests {
-              cpu = "1"
-            }
+            limits   = { memory = "1Gi" }
+            requests = { cpu = "1" }
           }
         }
       }
