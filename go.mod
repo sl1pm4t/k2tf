@@ -6,8 +6,8 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20190821123243-0c888d1241f6
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.0
-	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210202195753-680224974208
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.4
+	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210317205744-c2ee7a4ed239
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/jinzhu/inflection v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1
@@ -75,9 +75,9 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl/v2 v2.6.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform-exec v0.12.0 // indirect
+	github.com/hashicorp/terraform-exec v0.13.0 // indirect
 	github.com/hashicorp/terraform-json v0.8.0 // indirect
-	github.com/hashicorp/terraform-plugin-go v0.1.0 // indirect
+	github.com/hashicorp/terraform-plugin-go v0.2.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
