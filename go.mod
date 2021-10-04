@@ -6,18 +6,18 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl v1.0.0
 	github.com/hashicorp/hcl2 v0.0.0-20190821123243-0c888d1241f6
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0
-	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210610210356-a7e396e940f3
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
+	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20210803163250-ae8bf149f4ee
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
 	github.com/jinzhu/inflection v1.0.0
-	github.com/mitchellh/reflectwalk v1.0.1
+	github.com/mitchellh/reflectwalk v1.0.2
 	github.com/rs/zerolog v1.19.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	github.com/zclconf/go-cty v1.8.1
-	k8s.io/api v0.21.0
-	k8s.io/apimachinery v0.21.0
+	github.com/zclconf/go-cty v1.8.4
+	k8s.io/api v0.21.2
+	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kube-aggregator v0.21.0
 )
@@ -57,7 +57,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.2.0 // indirect
@@ -70,16 +70,16 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
 	github.com/hashicorp/go-getter v1.5.3 // indirect
 	github.com/hashicorp/go-hclog v0.16.0 // indirect
-	github.com/hashicorp/go-plugin v1.4.0 // indirect
+	github.com/hashicorp/go-plugin v1.4.1 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl/v2 v2.9.1 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform-exec v0.13.2 // indirect
-	github.com/hashicorp/terraform-json v0.10.0 // indirect
-	github.com/hashicorp/terraform-plugin-go v0.2.1 // indirect
+	github.com/hashicorp/terraform-exec v0.14.0 // indirect
+	github.com/hashicorp/terraform-json v0.12.0 // indirect
+	github.com/hashicorp/terraform-plugin-go v0.3.0 // indirect
 	github.com/hashicorp/yamux v0.0.0-20210316155119-a95892c5f864 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -93,7 +93,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
-	github.com/mitchellh/copystructure v1.1.2 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
@@ -115,12 +115,12 @@ require (
 	github.com/xlab/treeprint v1.1.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.starlark.net v0.0.0-20210406145628-7a1108eaa012 // indirect
-	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210414194228-064579744ee0 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78 // indirect
-	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
+	golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79 // indirect
 	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
@@ -135,7 +135,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/cli-runtime v0.21.0 // indirect
-	k8s.io/component-base v0.21.0 // indirect
+	k8s.io/component-base v0.21.2 // indirect
 	k8s.io/klog/v2 v2.8.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20210323165736-1a6458611d18 // indirect
 	k8s.io/kubectl v0.21.0 // indirect
