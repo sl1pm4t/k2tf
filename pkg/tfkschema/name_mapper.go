@@ -25,6 +25,7 @@ func init() {
 	inflection.AddSingular("capabilities", "capabilities")
 	inflection.AddSingular("ClusterRoleSelectors", "ClusterRoleSelectors")
 	inflection.AddSingular("MatchExpressions", "MatchExpressions")
+	inflection.AddSingular("parameters", "parameters")
 
 	inflection.AddUncountable("data")
 	inflection.AddUncountable("metadata")
