@@ -205,7 +205,7 @@ func (w *ObjectWalker) closeBlock() *hclBlock {
 		w.dst.AppendBlock(current.hcl)
 
 	} else {
-		if current.hasValue || current.isRequired() {
+		if current.hasValue || tfkschema.IncludedOnZero(w.currentBlock.fieldName) || current.isRequired() {
 			if !includeUnsupported && current.unsupported {
 				// don't append this block or child blocks
 				w.warn().
@@ -351,7 +351,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 	if !w.ignoreSliceElems && v.CanAddr() && v.CanInterface() {
 		w.debug(fmt.Sprintf("Primitive: %s = %v (%T)", w.field().Name, v.Interface(), v.Interface()))
 
-		if !IsZero(v) {
+		if !IsZero(v) || tfkschema.IncludedOnZero(w.field().Name) {
 			w.currentBlock.hasValue = true
 			w.currentBlock.SetAttributeValue(
 				tfkschema.ToTerraformAttributeName(w.field(), w.currentBlock.FullSchemaName()),
@@ -363,7 +363,7 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 }
 
 // Map is called everytime reflectwalk enters a Map
-// Golang maps are usally output as HCL maps, but sometimes as sub-blocks.
+// Golang maps are usually output as HCL maps, but sometimes as sub-blocks.
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := tfkschema.ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
 	hcl := hclwrite.NewBlock(blockName, nil)
