@@ -148,6 +148,11 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_daemonset",
 			0,
 		},
+		{
+			"storageClass",
+			"kubernetes_storage_class",
+			0,
+		},
 	}
 
 	for _, tt := range tests {
