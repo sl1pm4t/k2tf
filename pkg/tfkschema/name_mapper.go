@@ -24,6 +24,7 @@ func init() {
 	inflection.AddSingular("imagePullSecrets", "imagePullSecrets")
 	inflection.AddSingular("capabilities", "capabilities")
 	inflection.AddSingular("ClusterRoleSelectors", "ClusterRoleSelectors")
+	inflection.AddSingular("MatchExpressions", "MatchExpressions")
 
 	inflection.AddUncountable("data")
 	inflection.AddUncountable("metadata")
