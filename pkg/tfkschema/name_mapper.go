@@ -23,6 +23,7 @@ func init() {
 	inflection.AddSingular("requests", "requests")
 	inflection.AddSingular("imagePullSecrets", "imagePullSecrets")
 	inflection.AddSingular("capabilities", "capabilities")
+	inflection.AddSingular("ClusterRoleSelectors", "ClusterRoleSelectors")
 
 	inflection.AddUncountable("data")
 	inflection.AddUncountable("metadata")
