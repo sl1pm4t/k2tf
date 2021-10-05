@@ -153,6 +153,11 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_storage_class",
 			0,
 		},
+		{
+			"replicationController",
+			"kubernetes_replication_controller",
+			0,
+		},
 	}
 
 	for _, tt := range tests {

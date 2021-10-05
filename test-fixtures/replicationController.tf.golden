@@ -1,0 +1,85 @@
+resource "kubernetes_replication_controller" "es" {
+  metadata {
+    name   = "es"
+    labels = { component = "elasticsearch" }
+  }
+  spec {
+    replicas = 1
+    template {
+      metadata {
+        labels = { component = "elasticsearch" }
+      }
+      spec {
+        volume {
+          name = "storage"
+          empty_dir {
+          }
+        }
+        init_container {
+          name              = "init-sysctl"
+          image             = "busybox"
+          command           = ["sysctl", "-w", "vm.max_map_count=262144"]
+          image_pull_policy = "IfNotPresent"
+          security_context {
+            privileged = true
+          }
+        }
+        container {
+          name  = "es"
+          image = "quay.io/pires/docker-elasticsearch-kubernetes:5.6.2"
+          port {
+            name           = "http"
+            container_port = 9200
+            protocol       = "TCP"
+          }
+          port {
+            name           = "transport"
+            container_port = 9300
+            protocol       = "TCP"
+          }
+          env {
+            name  = "KUBERNETES_CA_CERTIFICATE_FILE"
+            value = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+          }
+          env {
+            name = "NAMESPACE"
+            value_from {
+              field_ref {
+                field_path = "metadata.namespace"
+              }
+            }
+          }
+          env {
+            name  = "CLUSTER_NAME"
+            value = "myesdb"
+          }
+          env {
+            name  = "DISCOVERY_SERVICE"
+            value = "elasticsearch"
+          }
+          env {
+            name  = "NODE_MASTER"
+            value = "true"
+          }
+          env {
+            name  = "NODE_DATA"
+            value = "true"
+          }
+          env {
+            name  = "HTTP_ENABLE"
+            value = "true"
+          }
+          volume_mount {
+            name       = "storage"
+            mount_path = "/data"
+          }
+          security_context {
+            capabilities {
+              add = ["IPC_LOCK"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -74,6 +74,7 @@ resource "kubernetes_deployment" "backend_api" {
               add  = ["NET_BIND_SERVICE"]
               drop = ["ALL"]
             }
+            run_as_user = 0
           }
         }
         container {
