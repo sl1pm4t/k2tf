@@ -25,6 +25,9 @@ _See below_
 ```
 $ brew install k2tf
 ```
+**asdf**
+
+Use the [asdf-k2tf](https://github.com/carlduevel/asdf-k2tf) plugin.
 
 
 ## Example Usage
