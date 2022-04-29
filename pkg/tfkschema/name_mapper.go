@@ -100,8 +100,9 @@ func NormalizeTerraformName(s string, toSingular bool, path string) string {
 	}
 	s = strcase.ToSnake(s)
 
-	// colons are not allowed by Terraform
+	// colons and dots are not allowed by Terraform
 	s = strings.ReplaceAll(s, ":", "_")
+	s = strings.ReplaceAll(s, ".", "_")
 
 	return s
 }
