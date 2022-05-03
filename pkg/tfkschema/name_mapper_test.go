@@ -252,6 +252,15 @@ func Test_NormalizeTerraformName(t *testing.T) {
 			},
 			"metallb_system_speaker",
 		},
+		{
+			"custom.metrics.k8s.io",
+			args{
+				"custom.metrics.k8s.io",
+				false,
+				"",
+			},
+			"custom_metrics_k_8_s_io",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
