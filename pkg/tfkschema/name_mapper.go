@@ -151,7 +151,19 @@ func extractProtobufName(field *reflect.StructField) string {
 func ToTerraformResourceType(obj runtime.Object) string {
 	tmeta := k8sutils.TypeMeta(obj)
 
-	return "kubernetes_" + NormalizeTerraformName(tmeta.Kind, false, "")
+	kind := tmeta.Kind
+	// Support TFK _v1 resource types
+	switch kind {
+	case "Ingress":
+		if tmeta.APIVersion == "networking.k8s.io/v1" {
+			kind = "ingress_v1"
+		} else {
+			kind = "ingress"
+		}
+	default:
+		kind = NormalizeTerraformName(tmeta.Kind, false, "")
+	}
+	return "kubernetes_" + kind
 }
 
 // ToTerraformResourceName extract the Kubernetes API Objects' name from the
