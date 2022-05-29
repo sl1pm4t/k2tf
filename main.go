@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/hcl/printer"
 	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/sl1pm4t/k2tf/pkg/file_io"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	flag "github.com/spf13/pflag"
 	"os"
@@ -57,11 +58,11 @@ func main() {
 		Str("builddate", date).
 		Msg("starting k2tf")
 
-	objs := readInput()
+	objs := file_io.ReadInput(input)
 
 	log.Debug().Msgf("read %d objects from input", len(objs))
 
-	w, closer := setupOutput()
+	w, closer := file_io.SetupOutput(output, overwriteExisting)
 	defer closer()
 
 	for i, obj := range objs {

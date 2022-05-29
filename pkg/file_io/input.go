@@ -1,4 +1,4 @@
-package main
+package file_io
 
 import (
 	"bufio"
@@ -15,14 +15,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func readInput() []runtime.Object {
+func ReadInput(input string) []runtime.Object {
 	if input == "-" || input == "" {
-		return readStdinInput()
+		return readStdinInput(input)
 	}
-	return readFilesInput()
+	return readFilesInput(input)
 }
 
-func readStdinInput() []runtime.Object {
+func readStdinInput(input string) []runtime.Object {
 	var objs []runtime.Object
 
 	info, err := os.Stdin.Stat()
@@ -63,7 +63,7 @@ func readStdinInput() []runtime.Object {
 	return objs
 }
 
-func readFilesInput() []runtime.Object {
+func readFilesInput(input string) []runtime.Object {
 	var objs []runtime.Object
 
 	if _, err := os.Stat(input); os.IsNotExist(err) {
