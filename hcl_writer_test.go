@@ -79,6 +79,11 @@ func TestWriteObject(t *testing.T) {
 			0,
 		},
 		{
+			"ingress_v1",
+			"kubernetes_ingress_v1",
+			0,
+		},
+		{
 			"job",
 			"kubernetes_job",
 			0,

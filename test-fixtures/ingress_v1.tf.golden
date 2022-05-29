@@ -1,0 +1,39 @@
+resource "kubernetes_ingress_v1" "tls_example_ingress" {
+  metadata {
+    name = "tls-example-ingress"
+  }
+  spec {
+    tls {
+      hosts = ["echo.example.com"]
+    }
+    rule {
+      host = "echo.example.com"
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "echo-server"
+              port {
+                number = 8080
+              }
+            }
+          }
+        }
+        path {
+          path      = "/.ws"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "echo-server-http"
+              port {
+                name = "http"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
