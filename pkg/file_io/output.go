@@ -1,4 +1,4 @@
-package main
+package file_io
 
 import (
 	"io"
@@ -11,7 +11,7 @@ var noOpCloser = func() {}
 
 type CloseFunc func()
 
-func setupOutput() (io.Writer, CloseFunc) {
+func SetupOutput(output string, overwriteExisting bool) (io.Writer, CloseFunc) {
 	var closeFn CloseFunc
 	var w io.Writer
 
