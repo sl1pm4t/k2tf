@@ -9,7 +9,7 @@ import (
 
 	"github.com/sl1pm4t/k2tf/pkg/testutils"
 
-	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/stretchr/testify/assert"
 )
 

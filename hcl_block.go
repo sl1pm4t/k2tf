@@ -4,7 +4,7 @@ import (
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	"strings"
 
-	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
