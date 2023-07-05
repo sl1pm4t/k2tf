@@ -125,6 +125,7 @@ resource "kubernetes_deployment" "backend_api" {
         termination_grace_period_seconds = 30
         dns_policy                       = "ClusterFirst"
         automount_service_account_token  = true
+        scheduler_name                   = "default-scheduler"
       }
     }
     strategy {
