@@ -179,7 +179,7 @@ func TestWriteObject(t *testing.T) {
 			// Read our golden file (or optionally write if env var is set)
 			goldenFile := filepath.Join("test-fixtures", tt.name+".tf.golden")
 			if update {
-				ioutil.WriteFile(goldenFile, hclFile.Bytes(), 0644)
+				os.WriteFile(goldenFile, hclFile.Bytes(), 0644)
 			}
 			expected := testLoadFile(t, goldenFile)
 
