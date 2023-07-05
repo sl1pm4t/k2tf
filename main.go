@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/hcl/printer"
-	"github.com/hashicorp/hcl2/hclwrite"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/sl1pm4t/k2tf/pkg/file_io"
 	"github.com/sl1pm4t/k2tf/pkg/tfkschema"
 	flag "github.com/spf13/pflag"
