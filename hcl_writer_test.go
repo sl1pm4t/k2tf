@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +23,7 @@ func init() {
 
 func testLoadFile(t *testing.T, fileparts ...string) string {
 	filename := filepath.Join(fileparts...)
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("failed to load test file, %s: %v", filename, err)
 	}
