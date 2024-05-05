@@ -37,7 +37,9 @@ func init() {
 // and translates it to the equivalent `terraform-kubernetes-provider` schema format.
 //
 // Sometimes the Kubernetes attribute name doesn't match struct name
-//   e.g. `type ContainerPort struct` -> "ports" in YAML
+//
+//	e.g. `type ContainerPort struct` -> "ports" in YAML
+//
 // so we need to extract the JSON name from the StructField tag.
 // Finally, the attribute name is converted to snake case.
 func ToTerraformAttributeName(field *reflect.StructField, path string) string {
@@ -50,7 +52,9 @@ func ToTerraformAttributeName(field *reflect.StructField, path string) string {
 // and translates it to the equivalent `terraform-kubernetes-provider` schema format.
 //
 // Sometimes the Kubernetes block name doesn't match struct name
-//   e.g. `type ContainerPort struct` -> "ports" in YAML
+//
+//	e.g. `type ContainerPort struct` -> "ports" in YAML
+//
 // so we need to extract the JSON name from the StructField tag.
 // Next, the attribute name is converted to singular + snake case.
 func ToTerraformSubBlockName(field *reflect.StructField, path string) string {
@@ -77,6 +81,11 @@ func NormalizeTerraformName(s string, toSingular bool, path string) string {
 	case "updateStrategy":
 		if !strings.Contains(path, "stateful") {
 			return "strategy"
+		}
+
+	case "sources":
+		if strings.Contains(path, "volume.projected") {
+			return "sources"
 		}
 
 	case "limits":
