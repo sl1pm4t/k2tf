@@ -169,6 +169,12 @@ func ToTerraformResourceType(obj runtime.Object) string {
 		} else {
 			kind = "ingress"
 		}
+	case "CronJob":
+		if tmeta.APIVersion == "batch/v1" {
+			kind = "cron_job_v1"
+		} else {
+			kind = "cron_job"
+		}
 	default:
 		kind = NormalizeTerraformName(tmeta.Kind, false, "")
 	}
