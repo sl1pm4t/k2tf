@@ -163,6 +163,16 @@ func TestWriteObject(t *testing.T) {
 			"kubernetes_replication_controller",
 			0,
 		},
+		{
+			"secretStringData",
+			"kubernetes_secret",
+			0,
+		},
+		{
+			"cronjob_v1",
+			"kubernetes_cronjob_v1",
+			0,
+		},
 	}
 
 	for _, tt := range tests {
