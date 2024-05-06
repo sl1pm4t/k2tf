@@ -264,7 +264,6 @@ func (w *ObjectWalker) Exit(l reflectwalk.Location) error {
 }
 
 // Struct is called every time reflectwalk enters a Struct
-//
 func (w *ObjectWalker) Struct(v reflect.Value) error {
 	if !v.CanInterface() {
 		w.debugf("skipping Struct [field: %s, type: %s] - CanInterface() = false", w.field().Name, v.Type())
@@ -366,6 +365,16 @@ func (w *ObjectWalker) Primitive(v reflect.Value) error {
 // Golang maps are usually output as HCL maps, but sometimes as sub-blocks.
 func (w *ObjectWalker) Map(m reflect.Value) error {
 	blockName := tfkschema.ToTerraformSubBlockName(w.field(), w.currentBlock.FullSchemaName())
+
+	// https://github.com/sl1pm4t/k2tf/issues/109
+	// terraform provider has no field for stringData
+	// so: handle this case as a special condition
+	if (w.field() != nil && w.field().Name == "StringData") &&
+		(w.currentBlock != nil && w.currentBlock.FullSchemaName() == "kubernetes_secret" ||
+			w.currentBlock != nil && w.currentBlock.FullSchemaName() == "kubernetes_secret_v1") {
+		blockName = "data"
+	}
+
 	hcl := hclwrite.NewBlock(blockName, nil)
 	b := w.openBlock(blockName, w.field().Name, hcl)
 
@@ -381,7 +390,8 @@ func (w *ObjectWalker) Map(m reflect.Value) error {
 }
 
 // MapElem is called every time reflectwalk enters a Map element
-//  normalize the element key, and write element value to the HCL block as an attribute value
+//
+//	normalize the element key, and write element value to the HCL block as an attribute value
 func (w *ObjectWalker) MapElem(m, k, v reflect.Value) error {
 	w.debug(fmt.Sprintf("MapElem: %s = %v (%T)", k, v.Interface(), v.Interface()))
 
@@ -401,9 +411,11 @@ Slice implements reflectwalk.SliceWalker interface, and is called each time refl
 Golang slices need to be converted to HCL in one of two ways:
 
 *1 - a simple list of primitive values:
+
 	list_name = ["foo", "bar", "baz"]
 
 *2 - a list of complex objects that will be rendered as repeating HCL blocks
+
 	container {
 		name  = "blah"
 		image = "nginx"
