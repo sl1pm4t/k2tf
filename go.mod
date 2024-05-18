@@ -1,6 +1,6 @@
 module github.com/sl1pm4t/k2tf
 
-go 1.19
+go 1.21
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
