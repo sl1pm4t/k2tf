@@ -2,5 +2,8 @@ resource "kubernetes_storage_class" "slow" {
   metadata {
     name = "slow"
   }
-  parameters = { replication-type = "none", type = "pd-standard" }
+  parameters = {
+    replication-type = "none"
+    type             = "pd-standard"
+  }
 }

@@ -5,7 +5,9 @@ resource "kubernetes_pod_disruption_budget" "test" {
   spec {
     min_available = "75%"
     selector {
-      match_labels = { app = "zookeeper" }
+      match_labels = {
+        app = "zookeeper"
+      }
     }
   }
 }

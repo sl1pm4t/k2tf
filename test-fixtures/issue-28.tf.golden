@@ -2,15 +2,22 @@ resource "kubernetes_daemonset" "nvidia_driver_installer" {
   metadata {
     name      = "nvidia-driver-installer"
     namespace = "kube-system"
-    labels    = { k8s-app = "nvidia-driver-installer" }
+    labels = {
+      k8s-app = "nvidia-driver-installer"
+    }
   }
   spec {
     selector {
-      match_labels = { k8s-app = "nvidia-driver-installer" }
+      match_labels = {
+        k8s-app = "nvidia-driver-installer"
+      }
     }
     template {
       metadata {
-        labels = { k8s-app = "nvidia-driver-installer", name = "nvidia-driver-installer" }
+        labels = {
+          k8s-app = "nvidia-driver-installer"
+          name    = "nvidia-driver-installer"
+        }
       }
       spec {
         volume {
@@ -75,7 +82,9 @@ resource "kubernetes_daemonset" "nvidia_driver_installer" {
             value = "/build/cos-tools"
           }
           resources {
-            requests = { cpu = "150m" }
+            requests = {
+              cpu = "150m"
+            }
           }
           volume_mount {
             name       = "nvidia-install-dir-host"

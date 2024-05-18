@@ -4,11 +4,15 @@ resource "kubernetes_deployment" "backend_api" {
   }
   spec {
     selector {
-      match_labels = { app = "backend-api" }
+      match_labels = {
+        app = "backend-api"
+      }
     }
     template {
       metadata {
-        labels = { app = "backend-api" }
+        labels = {
+          app = "backend-api"
+        }
       }
       spec {
         container {

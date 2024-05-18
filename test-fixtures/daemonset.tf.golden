@@ -2,23 +2,33 @@ resource "kubernetes_daemonset" "terraform_example" {
   metadata {
     name      = "terraform-example"
     namespace = "something"
-    labels    = { test = "MyExampleApp" }
+    labels = {
+      test = "MyExampleApp"
+    }
   }
   spec {
     selector {
-      match_labels = { test = "MyExampleApp" }
+      match_labels = {
+        test = "MyExampleApp"
+      }
     }
     template {
       metadata {
-        labels = { test = "MyExampleApp" }
+        labels = {
+          test = "MyExampleApp"
+        }
       }
       spec {
         container {
           name  = "example"
           image = "nginx:1.7.8"
           resources {
-            limits   = { memory = "512Mi" }
-            requests = { cpu = "250m" }
+            limits = {
+              memory = "512Mi"
+            }
+            requests = {
+              cpu = "250m"
+            }
           }
         }
       }

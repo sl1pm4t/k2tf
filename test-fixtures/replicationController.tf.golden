@@ -1,13 +1,17 @@
 resource "kubernetes_replication_controller" "es" {
   metadata {
-    name   = "es"
-    labels = { component = "elasticsearch" }
+    name = "es"
+    labels = {
+      component = "elasticsearch"
+    }
   }
   spec {
     replicas = 1
     template {
       metadata {
-        labels = { component = "elasticsearch" }
+        labels = {
+          component = "elasticsearch"
+        }
       }
       spec {
         volume {
