@@ -3,7 +3,6 @@ package file_io
 import (
 	"bufio"
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,7 +81,7 @@ func readFilesInput(input string) []runtime.Object {
 
 	readFile := func(fileName string) {
 		log.Debug().Msgf("reading file: %s", fileName)
-		content, err := ioutil.ReadFile(fileName)
+		content, err := os.ReadFile(fileName)
 		if err != nil {
 			log.Fatal().Err(err).Msg("could not read file")
 		}
