@@ -4,7 +4,9 @@ resource "kubernetes_cluster_role" "monitoring" {
   }
   aggregation_rule {
     cluster_role_selectors {
-      match_labels = { "rbac.example.com/aggregate-to-monitoring" = "true" }
+      match_labels = {
+        "rbac.example.com/aggregate-to-monitoring" = "true"
+      }
     }
   }
 }

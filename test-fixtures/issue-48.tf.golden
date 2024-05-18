@@ -7,7 +7,9 @@ resource "kubernetes_replication_controller" "echoheaders" {
     replicas = 1
     template {
       metadata {
-        labels = { app = "echoheaders" }
+        labels = {
+          app = "echoheaders"
+        }
       }
       spec {
         container {
