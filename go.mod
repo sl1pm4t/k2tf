@@ -14,7 +14,7 @@ require (
 	github.com/rs/zerolog v1.32.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.9.0
 	github.com/zclconf/go-cty v1.14.4
 	k8s.io/api v0.25.5
 	k8s.io/apimachinery v0.25.5
