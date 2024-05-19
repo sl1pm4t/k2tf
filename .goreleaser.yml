@@ -1,5 +1,7 @@
+project_name: k2tf
 builds:
-  - env:
+  - id: k2tf
+    env:
       - CGO_ENABLED=0
     goos:
       - darwin
@@ -7,17 +9,18 @@ builds:
       - windows
     goarch:
       - amd64
-archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+      - arm64
+
 checksum:
   name_template: "checksums.txt"
+archives:
+  - id: k2tf
+    builds:
+      - k2tf
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ title .Os }}_{{ .Arch }}"
 snapshot:
-  name_template: "{{ .Tag }}-dev"
+  name_template: "{{ .Tag }}-dev-{{ .ShortCommit  }}"
 changelog:
   sort: asc
   filters:
