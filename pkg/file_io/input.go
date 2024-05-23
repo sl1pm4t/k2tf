@@ -73,6 +73,7 @@ func readFilesInput(input string) []runtime.Object {
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}
+	defer file.Close()
 
 	fs, err := file.Stat()
 	if err != nil {
