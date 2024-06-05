@@ -41,7 +41,7 @@ jobs:
           cache: true
 
       - name: Create release
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
