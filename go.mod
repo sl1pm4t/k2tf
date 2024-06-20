@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/hashicorp/hcl v0.0.0-20170504190234-a4b07c25de5f
+	github.com/hashicorp/hcl v1.0.1-vault-5
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/hashicorp/terraform-provider-kubernetes v1.13.4-0.20230417041302-5de2ce8af29e
