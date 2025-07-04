@@ -23,7 +23,7 @@ func SetupOutput(output string, overwriteExisting bool) (io.Writer, CloseFunc) {
 			log.Fatal().Str("file", output).Msg("output file already exists")
 		}
 
-		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+		f, err := os.OpenFile(output, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		w = f
 		if err != nil {
 			log.Fatal().Err(err).Msg("")
