@@ -34,6 +34,8 @@ Use the [asdf-k2tf](https://github.com/carlduevel/asdf-k2tf) plugin.
 
 **Convert a single YAML file and write generated Terraform config to Stdout**
 
+
+
 ```
 $ k2tf -f test-fixtures/service.yaml
 ```
@@ -84,3 +86,9 @@ $ make test
 ---
 
 [![Downloads](https://img.shields.io/github/downloads/sl1pm4t/k2tf/total.svg)](https://img.shields.io/github/downloads/sl1pm4t/k2tf/total.svg)
+
+## Used in other Projects
+
+The `k2tf` converter is known to be used in the following projects:
+
+- [x0 JavaScript Framework](https://github.com/WEBcodeX1/x0)
